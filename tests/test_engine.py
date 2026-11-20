@@ -33,14 +33,14 @@ def test_always_long_zero_cost_equals_asset(prices):
 def test_position_is_lagged_one_day():
     p = _toy()  # returns: _, +10%, -10%, 0%, +10%
     pos = pd.Series([0, 1, 0, 0, 0], index=p.index, dtype=float)  # long only at close of day 1
-    r = run_backtest(p, pos, cost_bps=0.0).returns
+    r = run_backtest(p, pos, cost_bps=0.0, cash_rate=None).returns
     np.testing.assert_allclose(r.to_numpy(), [0, 0, -0.10, 0, 0], atol=1e-12)
 
 
 def test_short_and_costs():
     p = _toy()
     pos = pd.Series([0, -1, -1, 0, 0], index=p.index, dtype=float)
-    r = run_backtest(p, pos, cost_bps=10.0).returns
+    r = run_backtest(p, pos, cost_bps=10.0, cash_rate=None).returns
     # day2: short earns +10%, minus cost of entering at close day1 (1 * 10bp)
     # day3: short, 0% ret, no new trade at close day2
     # day4: flat, minus cost of exiting at close day3
@@ -61,6 +61,52 @@ def test_rejects_bad_positions():
         run_backtest(p, pd.Series([0, 2, 0, 0, 0], index=p.index, dtype=float))
     with pytest.raises(AssertionError):
         run_backtest(p, pd.Series([0, np.nan, 0, 0, 0], index=p.index))
+
+
+# ------------------------------------------------------------ cash yield ---
+def test_cash_earns_rate_on_uninvested_fraction():
+    p = _toy()
+    rf = pd.Series(0.001, index=p.index)
+    pos = pd.Series([0, 0.5, 0.5, 1.0, 0], index=p.index, dtype=float)
+    res = run_backtest(p, pos, cost_bps=0.0, cash_rate=rf)
+    asset = p["AdjClose"].pct_change().fillna(0).to_numpy()
+    held = np.array([0, 0, 0.5, 0.5, 1.0])
+    np.testing.assert_allclose(res.returns.to_numpy(), held * asset + (1 - held) * 0.001, atol=1e-12)
+
+
+def test_short_proceeds_earn_nothing():
+    p = _toy()
+    rf = pd.Series(0.001, index=p.index)
+    pos = pd.Series([-1.0] * 5, index=p.index)
+    r = run_backtest(p, pos, cost_bps=0.0, cash_rate=rf).returns
+    np.testing.assert_allclose(r.iloc[1:], -p["AdjClose"].pct_change().iloc[1:], atol=1e-12)
+
+
+def test_auto_cash_rate_uses_committed_tbills(prices):
+    flat = run_backtest(prices, pd.Series(0.0, index=prices.index))
+    yearly = (1 + flat.returns).groupby(prices.index.year).prod() - 1
+    assert 0.040 < yearly[2007] < 0.050 and 0.045 < yearly[2023] < 0.055   # T-bill yields
+    assert abs(yearly[2013]) < 0.002                                          # ZIRP era
+    bh = run_backtest(prices, pd.Series(1.0, index=prices.index), cost_bps=0)  # fully invested:
+    np.testing.assert_allclose(bh.returns.iloc[1:],                           # no cash, no change
+                               prices["AdjClose"].pct_change().iloc[1:], rtol=1e-9)
+
+
+def test_risk_free_is_known_before_it_is_earned(prices):
+    from qqq.data import load_risk_free_yield, risk_free_daily
+    rf = risk_free_daily(prices.index)
+    y = load_risk_free_yield().reindex(prices.index).ffill()
+    expected = ((1 + y / 100) ** (1 / 252) - 1).shift(1).fillna(0)
+    np.testing.assert_allclose(rf.to_numpy(), expected.to_numpy(), rtol=1e-12)
+
+
+def test_sharpe_is_in_excess_of_tbills():
+    r = pd.Series([0.01, -0.02, 0.03, 0.0, 0.015])
+    rf = pd.Series(0.0002, index=r.index)
+    m = compute_metrics(r, rf_daily=rf)
+    ex = r - 0.0002
+    assert m["sharpe_ratio"] == pytest.approx(ex.mean() / ex.std(ddof=1) * np.sqrt(252))
+    assert m["mean_daily_return"] == pytest.approx(r.mean())   # raw stats unchanged
 
 
 # --------------------------------------------------------------- metrics ---

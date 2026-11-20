@@ -89,7 +89,7 @@ def test_allow_short():
 
 def test_engine_trades_the_day_after_the_signal():
     p = _prices(V)
-    res = run_backtest(p, MA(2, 4).generate_positions(p), cost_bps=0.0)
+    res = run_backtest(p, MA(2, 4).generate_positions(p), cost_bps=0.0, cash_rate=None)
     # signal at close of day 6 -> first P&L on day 7 (+9/8 - 1)
     assert res.returns.iloc[:7].abs().sum() == 0
     assert res.returns.iloc[7] == pytest.approx(9 / 8 - 1)

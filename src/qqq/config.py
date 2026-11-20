@@ -21,7 +21,11 @@ DATA_END = "2026-10-30"  # last trading day in the committed data.
 
 # ---- Backtest conventions --------------------------------------------------
 TRADING_DAYS_PER_YEAR = 252
-RISK_FREE_RATE_ANNUAL = 0.0  # WS2 may switch to a T-bill series; keep 0 until agreed.
+RISK_FREE_RATE_ANNUAL = 0.0  # fallback only, when no daily T-bill series is passed to metrics
+# Uninvested capital earns the 13-week US T-bill rate (data/raw/IRX.csv), and
+# Sharpe/Sortino are measured on returns in EXCESS of that rate (textbook definition).
+CASH_EARNS_RISK_FREE = True
+RISK_FREE_TICKER = "^IRX"  # CBOE 13-week T-bill yield index, in percent
 TRANSACTION_COST_BPS = 5.0   # one-way cost per unit of turnover, in basis points.
 RANDOM_SEED = 42
 
@@ -34,3 +38,4 @@ POSITIONS_DIR = RESULTS / "positions"
 METRICS_DIR = RESULTS / "metrics"
 FIGURES_DIR = RESULTS / "figures"
 PRICES_CSV = DATA_RAW / f"{TICKER}.csv"
+RISK_FREE_CSV = DATA_RAW / "IRX.csv"

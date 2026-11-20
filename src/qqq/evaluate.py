@@ -17,9 +17,8 @@ import warnings
 import pandas as pd
 
 from qqq import config
-from qqq.backtest import run_backtest, trade_stats
+from qqq.backtest import run_backtest
 from qqq.data import load_prices, split
-from qqq.metrics import compute_metrics
 from qqq.strategies.base import BuyAndHold, Strategy, validate_positions
 
 PERIODS = {
@@ -44,8 +43,7 @@ def backtest_strategy(strategy: Strategy, prices: pd.DataFrame | None = None,
 def period_metrics(result, periods=DEV_PERIODS) -> pd.DataFrame:
     rows = {}
     for p in periods:
-        sub = result.slice(*PERIODS[p])
-        rows[p] = compute_metrics(sub.returns) | trade_stats(sub)
+        rows[p] = result.slice(*PERIODS[p]).metrics()
     return pd.DataFrame(rows).T
 
 
@@ -79,7 +77,7 @@ def grid_search(strategy_cls: type[Strategy], grid: dict, period: str = "train",
         except ValueError as e:  # e.g. short window >= long window
             warnings.warn(f"skipped {params}: {e}")
             continue
-        m = compute_metrics(res.slice(*PERIODS[period]).returns)
+        m = res.slice(*PERIODS[period]).metrics()
         rows.append(dict(zip(keys, combo)) | m)
     return pd.DataFrame(rows).sort_values(metric, ascending=False).reset_index(drop=True)
 

@@ -7,8 +7,12 @@ All metrics take a series of DAILY simple returns.
     annualized_mean_return  mean(r) * 252                   (arithmetic)
     annualized_return       prod(1+r)^(252/n) - 1           (geometric / CAGR)
     annualized_volatility   std(r) * sqrt(252)
-    sharpe_ratio            (mean(r) - rf_d) / std(r) * sqrt(252)
-    sortino_ratio           (mean(r) - rf_d) / downside_std * sqrt(252)
+    sharpe_ratio            mean(r - rf) / std(r - rf) * sqrt(252)   (excess of T-bills)
+    sortino_ratio           mean(r - rf) / downside_std(r - rf) * sqrt(252)
+
+rf is the daily T-bill series (rf_daily, from BacktestResult.rf) when given,
+else the constant config.RISK_FREE_RATE_ANNUAL. Use BacktestResult.metrics()
+so the right series is always passed.
     cumulative_return       prod(1+r) - 1
     max_drawdown            min_t equity_t / max_{s<=t} equity_s - 1   (<= 0)
     calmar_ratio            annualized_return / |max_drawdown|
@@ -52,14 +56,20 @@ def compute_metrics(
     returns: pd.Series,
     periods_per_year: int = config.TRADING_DAYS_PER_YEAR,
     rf_annual: float = config.RISK_FREE_RATE_ANNUAL,
+    rf_daily: pd.Series | None = None,
 ) -> dict:
     r = returns.dropna().astype("float64")
     n = len(r)
     if n < 2:
         return {k: float("nan") for k in METRIC_KEYS} | {"n_days": n}
-    rf_d = (1 + rf_annual) ** (1 / periods_per_year) - 1
+    if rf_daily is not None:
+        rf_d = rf_daily.reindex(r.index).fillna(0.0)
+    else:
+        rf_d = pd.Series((1 + rf_annual) ** (1 / periods_per_year) - 1, index=r.index)
+    ex = r - rf_d
     mean, std = float(r.mean()), float(r.std(ddof=1))
-    downside = float(np.sqrt((np.minimum(r - rf_d, 0) ** 2).mean()))
+    ex_mean, ex_std = float(ex.mean()), float(ex.std(ddof=1))
+    downside = float(np.sqrt((np.minimum(ex, 0) ** 2).mean()))
     growth = float((1 + r).prod())
     ann_ret = growth ** (periods_per_year / n) - 1 if growth > 0 else -1.0
     mdd = max_drawdown((1 + r).cumprod())
@@ -70,8 +80,8 @@ def compute_metrics(
         "annualized_mean_return": mean * periods_per_year,
         "annualized_return": ann_ret,
         "annualized_volatility": std * np.sqrt(periods_per_year),
-        "sharpe_ratio": _safe_div(mean - rf_d, std) * np.sqrt(periods_per_year),
-        "sortino_ratio": _safe_div(mean - rf_d, downside) * np.sqrt(periods_per_year),
+        "sharpe_ratio": _safe_div(ex_mean, ex_std) * np.sqrt(periods_per_year),
+        "sortino_ratio": _safe_div(ex_mean, downside) * np.sqrt(periods_per_year),
         "cumulative_return": growth - 1,
         "max_drawdown": mdd,
         "calmar_ratio": _safe_div(ann_ret, abs(mdd)),
@@ -96,9 +106,14 @@ def excess_return_test(strategy: pd.Series, benchmark: pd.Series) -> dict:
 
 
 def bootstrap_sharpe_ci(returns: pd.Series, n_boot: int = 2000, block: int = 20,
-                        alpha: float = 0.05, seed: int = config.RANDOM_SEED) -> tuple[float, float]:
-    """Moving-block bootstrap CI for the annualized Sharpe ratio."""
-    r = returns.dropna().to_numpy()
+                        alpha: float = 0.05, seed: int = config.RANDOM_SEED,
+                        rf_daily: pd.Series | None = None) -> tuple[float, float]:
+    """Moving-block bootstrap CI for the annualized Sharpe ratio (of excess returns
+    when rf_daily is given)."""
+    rr = returns.dropna()
+    if rf_daily is not None:
+        rr = rr - rf_daily.reindex(rr.index).fillna(0.0)
+    r = rr.to_numpy()
     n = len(r)
     rng = np.random.default_rng(seed)
     n_blocks = int(np.ceil(n / block))

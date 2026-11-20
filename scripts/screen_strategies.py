@@ -141,7 +141,7 @@ def leaderboard(prices) -> dict[str, pd.DataFrame]:
         for period in DEV:
             sub = res.slice(*PERIODS[period])
             m = sub.metrics()
-            lo, hi = bootstrap_sharpe_ci(sub.returns, n_boot=1000, rf_daily=sub.rf)
+            lo, hi = bootstrap_sharpe_ci(sub.returns, rf_daily=sub.rf)  # 2000 resamples, block 20
             rows[period][label] = {
                 "CAGR": f"{m['annualized_return']:.1%}",
                 "Ann. vol": f"{m['annualized_volatility']:.1%}",

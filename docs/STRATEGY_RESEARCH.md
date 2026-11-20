@@ -45,7 +45,7 @@ None of these apply to one ETF on daily bars. The families that do apply are bel
 
 ## 3. The screen on QQQ
 
-Textbook settings, no tuning: 5 bps one-way costs, uninvested cash earns 13-week T-bills, and Sharpe is in excess of T-bills. Sharpe CIs are 95% moving-block bootstrap intervals.
+Textbook settings, no tuning: 5 bps one-way costs, uninvested cash earns 13-week T-bills, and Sharpe is in excess of T-bills. Sharpe CIs are 95% moving-block bootstrap intervals (2,000 resamples, 20-day blocks: the same settings as every other CI in the repo).
 
 ### 3.1 Leaderboard
 
@@ -54,34 +54,34 @@ Textbook settings, no tuning: 5 bps one-way costs, uninvested cash earns 13-week
 | Strategy | CAGR | Ann. vol | Sharpe | Sharpe 95% CI | Max DD | Calmar | Exposure | # trades |
 |---|---|---|---|---|---|---|---|---|
 | Slot 1 MA v3 (team default) | 12.1% | 14.8% | **0.76** | [0.31, 1.28] | −26.8% | 0.45 | 82% | 114 |
-| Vol target 15%, always long | 11.0% | 14.1% | 0.73 | [0.25, 1.26] | −30.4% | 0.36 | 85% | 1813 |
-| Slot 1 MA v2 (no vol cap) | **12.6%** | 16.5% | 0.73 | [0.29, 1.22] | −30.6% | 0.41 | 86% | 38 |
-| Trend blend 1/3/12m × vol target | 7.6% | 10.3% | 0.65 | [0.16, 1.15] | −17.5% | 0.43 | 65% | 1793 |
+| Vol target 15%, always long | 11.0% | 14.1% | 0.73 | [0.26, 1.24] | −30.4% | 0.36 | 85% | 1813 |
+| Slot 1 MA v2 (no vol cap) | **12.6%** | 16.5% | 0.73 | [0.28, 1.22] | −30.6% | 0.41 | 86% | 38 |
+| Trend blend 1/3/12m × vol target | 7.6% | 10.3% | 0.65 | [0.16, 1.16] | −17.5% | 0.43 | 65% | 1793 |
 | SMA200 × vol target | 8.1% | 11.9% | 0.61 | [0.12, 1.13] | −20.0% | 0.40 | 69% | 1212 |
 | Trend blend 1/3/12m | 7.8% | 11.9% | 0.59 | [0.11, 1.11] | −28.0% | 0.28 | 72% | 489 |
-| **Buy & hold** | 11.1% | 20.2% | 0.56 | [0.11, 1.10] | −53.4% | 0.21 | 100% | 1 |
-| SMA200 filter (Faber) | 8.3% | 13.8% | 0.56 | [0.04, 1.08] | −26.3% | 0.31 | 76% | 94 |
-| 12-month momentum | 8.5% | 15.5% | 0.53 | [0.09, 1.05] | −32.0% | 0.27 | 81% | 56 |
-| RSI(2) + SMA200 filter | 5.0% | 7.6% | 0.52 | [0.12, 1.01] | −11.7% | 0.43 | 14% | 228 |
-| RSI(2), no filter | 6.7% | 12.6% | 0.48 | [0.12, 0.86] | −19.5% | 0.34 | 22% | 310 |
-| Turn of month | 2.3% | 8.2% | 0.18 | [−0.29, 0.70] | −19.5% | 0.12 | 18% | 337 |
+| **Buy & hold** | 11.1% | 20.2% | 0.56 | [0.12, 1.09] | −53.4% | 0.21 | 100% | 1 |
+| SMA200 filter (Faber) | 8.3% | 13.8% | 0.56 | [0.06, 1.08] | −26.3% | 0.31 | 76% | 94 |
+| 12-month momentum | 8.5% | 15.5% | 0.53 | [0.07, 1.05] | −32.0% | 0.27 | 81% | 56 |
+| RSI(2) + SMA200 filter | 5.0% | 7.6% | 0.52 | [0.10, 1.00] | −11.7% | 0.43 | 14% | 228 |
+| RSI(2), no filter | 6.7% | 12.6% | 0.48 | [0.13, 0.87] | −19.5% | 0.34 | 22% | 310 |
+| Turn of month | 2.3% | 8.2% | 0.18 | [−0.28, 0.67] | −19.5% | 0.12 | 18% | 337 |
 
 **Validation (2019–2021)**
 
 | Strategy | CAGR | Ann. vol | Sharpe | Sharpe 95% CI | Max DD | Calmar | Exposure | # trades |
 |---|---|---|---|---|---|---|---|---|
-| Vol target 15%, always long | 24.3% | 14.9% | **1.48** | [0.40, 2.59] | −13.7% | **1.78** | 78% | 489 |
-| Slot 1 MA v3 (team default) | 28.1% | 17.8% | 1.44 | [0.32, 2.55] | −19.0% | 1.48 | 88% | 45 |
-| **Buy & hold** | **37.9%** | 24.9% | 1.38 | [0.29, 2.60] | −28.6% | 1.33 | 100% | 0 |
-| Slot 1 MA v2 (no vol cap) | 35.6% | 24.7% | 1.33 | [0.28, 2.57] | −28.6% | 1.25 | 99% | 1 |
-| SMA200 filter (Faber) | 27.4% | 19.9% | 1.28 | [0.12, 2.45] | −22.0% | 1.25 | 93% | 11 |
-| SMA200 × vol target | 19.7% | 14.3% | 1.27 | [0.20, 2.37] | −12.4% | 1.58 | 75% | 444 |
-| Trend blend 1/3/12m × vol target | 16.9% | 12.5% | 1.25 | [0.19, 2.42] | **−10.4%** | 1.63 | 69% | 489 |
-| Trend blend 1/3/12m | 22.4% | 17.0% | 1.23 | [0.12, 2.46] | −18.9% | 1.18 | 85% | 84 |
-| 12-month momentum | 25.4% | 23.8% | 1.04 | [−0.01, 2.46] | −31.4% | 0.81 | 97% | 15 |
-| Turn of month | 6.7% | 10.7% | 0.58 | [−0.34, 1.75] | −8.0% | 0.83 | 18% | 72 |
-| RSI(2) + SMA200 filter | 5.1% | 9.9% | 0.47 | [−0.26, 1.40] | −8.6% | 0.59 | 13% | 48 |
-| RSI(2), no filter | 6.5% | 16.1% | 0.42 | [−0.06, 1.44] | −17.1% | 0.38 | 15% | 48 |
+| Vol target 15%, always long | 24.3% | 14.9% | **1.48** | [0.39, 2.64] | −13.7% | **1.78** | 78% | 489 |
+| Slot 1 MA v3 (team default) | 28.1% | 17.8% | 1.44 | [0.33, 2.62] | −19.0% | 1.48 | 88% | 45 |
+| **Buy & hold** | **37.9%** | 24.9% | 1.38 | [0.29, 2.68] | −28.6% | 1.33 | 100% | 0 |
+| Slot 1 MA v2 (no vol cap) | 35.6% | 24.7% | 1.33 | [0.28, 2.66] | −28.6% | 1.25 | 99% | 1 |
+| SMA200 filter (Faber) | 27.4% | 19.9% | 1.28 | [0.09, 2.54] | −22.0% | 1.25 | 93% | 11 |
+| SMA200 × vol target | 19.7% | 14.3% | 1.27 | [0.19, 2.45] | −12.4% | 1.58 | 75% | 444 |
+| Trend blend 1/3/12m × vol target | 16.9% | 12.5% | 1.25 | [0.16, 2.48] | **−10.4%** | 1.63 | 69% | 489 |
+| Trend blend 1/3/12m | 22.4% | 17.0% | 1.23 | [0.08, 2.56] | −18.9% | 1.18 | 85% | 84 |
+| 12-month momentum | 25.4% | 23.8% | 1.04 | [−0.02, 2.54] | −31.4% | 0.81 | 97% | 15 |
+| Turn of month | 6.7% | 10.7% | 0.58 | [−0.36, 1.72] | −8.0% | 0.83 | 18% | 72 |
+| RSI(2) + SMA200 filter | 5.1% | 9.9% | 0.47 | [−0.28, 1.38] | −8.6% | 0.59 | 13% | 48 |
+| RSI(2), no filter | 6.5% | 16.1% | 0.42 | [−0.09, 1.45] | −17.1% | 0.38 | 15% | 48 |
 
 ### 3.2 What drives Slot 1's edge?
 
@@ -191,3 +191,29 @@ Turn-of-month was the only screen strategy that read the future price index, to 
 - Moskowitz, T. J., Ooi, Y. H., & Pedersen, L. H. (2012). Time series momentum. *Journal of Financial Economics*, 104(2), 228–250.
 - Welch, I., & Goyal, A. (2008). A comprehensive look at the empirical performance of equity premium prediction. *Review of Financial Studies*, 21(4), 1455–1508. https://www.nber.org/papers/w10483
 - Zakamulin, V. (2015). A comprehensive look at the empirical performance of moving average trading strategies. SSRN working paper. https://papers.ssrn.com/abstract=2677212
+
+---
+
+## Appendix: how this document was produced (for reviewers)
+
+Everything here was produced with Claude (an AI assistant) working in the team repo, and reviewed by Akshat. In order:
+
+1. **Literature search.** Web searches covered:
+   - trend following and time-series momentum
+   - volatility targeting (Moreira & Muir; Harvey et al.; and Cederburg et al. as the critical view)
+   - Connors' RSI(2), turn of the month, overnight returns
+   - ML return prediction (Welch & Goyal; Gu, Kelly & Xiu; Fischer & Krauss)
+   - overfitting (McLean & Pontiff; Bailey et al.)
+
+   The claims in §1–2 paraphrase those sources (see References).
+2. **First screen (chat only, superseded).** The first version of the screen was run when the engine still paid **0% on cash** and measured Sharpe on raw returns. Its numbers were shared in chat but **are not in this document**. Before this PR was opened, `main` gained the T-bill engine (#13) and Slot 1 v3 (#14). Everything was rerun on that engine, which is why, for example, buy-and-hold's train Sharpe here is 0.56, not 0.62.
+3. **Strategies are textbook versions with no tuning.** Parameters come from the cited papers: 15% vol target, 20-day window, 200-day SMA, 1/3/12-month momentum, RSI(2) 10/70. They are defined inline in `scripts/screen_strategies.py` and are **not** registered as team strategies.
+4. **Data.** Only the committed `data/raw/QQQ.csv` and `IRX.csv` were used. Firecrawl and direct downloads were blocked by the workspace's network policy, so the data could not be cross-checked against a second source.
+5. **Periods.** Only train (2005–2018) and validation (2019–2021) were computed. The test period was never printed or written.
+6. **Leakage audit (`scripts/leakage_audit.py`).**
+   - Its first version had a weak check 2: two random "alternate futures" both happened to start with an up day, like the real data, so the deliberately leaky control slipped through. A **mirrored** future (real returns with the sign flipped) was added; since then the control is caught by checks 1, 2 and 4.
+   - The audit also exposed one real leak, in this screen's own **turn-of-month** rule. It decided "is tomorrow the last trading day?" from the future rows of the price index. It now uses a Mon–Fri calendar known in advance, and its numbers changed (train Sharpe 0.13 → 0.18, validation 0.72 → 0.58).
+7. **Confidence intervals** first used 1,000 bootstrap resamples. They were later rerun with the repo default (2,000 resamples, 20-day blocks) so they match Slot 1's report. Only the CI columns changed, by ≤ 0.07.
+8. **Validation was seen for every strategy in the screen**, including a simple neural-network direction classifier (§3.4, AUC 0.50). This happened **before** Slot 2's protocol was written, so Slot 2's choice of model families was made knowing that result. The Slot 2 protocol says so.
+
+Reproduce everything in this document with `python scripts/screen_strategies.py` (tables) and `python scripts/leakage_audit.py` (audit).

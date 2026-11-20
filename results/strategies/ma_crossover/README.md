@@ -39,11 +39,11 @@ Full metric tables (Sortino, Calmar, hit rate, turnover): [`v1/metrics.md`](v1/m
 6. **Caveat:** 95% bootstrap confidence intervals for Sharpe are about ±0.5 and overlap for all versions and buy-and-hold, so the Sharpe differences are not statistically significant. The more robust improvement is the smaller drawdowns and volatility.
 
 ## Ideas tested and rejected
-These were tested on train and validation, using published approaches:
-- **Monthly or weekly signals (Faber 2007):** exited too late (train Sharpe 0.61 / 0.69 vs 0.71).
-- **A 12-month momentum filter (Clare et al. 2013):** with AND it cut out good periods; with OR it re-entered too early (0.55 / 0.67).
-- **KAMA adaptive moving average:** whipsawed badly (−0.02).
-- **Faber's exact 10-month rule on QQQ:** 0.56, no better than buy-and-hold.
+These were tested on train using published approaches (Sharpe in excess of T-bills, same engine as above; v2 = 0.73, buy & hold = 0.56):
+- **Monthly or weekly signals (Faber 2007):** exited too late (0.63 / 0.71).
+- **12-month momentum filter (Clare et al. 2013):** with AND it cut out good periods; with OR it re-entered too early (0.57 / 0.69).
+- **KAMA adaptive moving average:** whipsawed badly (0.04).
+- **Faber's exact 10-month rule on QQQ:** 0.58, barely above buy-and-hold.
 
 ## Figures
 | | v1 | v2 | v3 |

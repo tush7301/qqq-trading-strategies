@@ -1,0 +1,15 @@
+{
+  "mode": "sharpe",
+  "lags": 20,
+  "hidden": [
+    32,
+    16
+  ],
+  "threshold": 0.5,
+  "turnover_bps": 25.0,
+  "band": 0.1,
+  "scale": "none",
+  "l2": 0.1,
+  "n_seeds": 5,
+  "seed": 42
+}

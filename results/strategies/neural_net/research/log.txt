@@ -1,0 +1,64 @@
+Buy & hold walk-forward (2011-2018) Sharpe 0.89
+  A {'mode': 'direction', 'lags': 5, 'hidden': (8,), 'threshold': 0.5, 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.80  exp 0.94  chg 185  (1.0s)
+  A {'mode': 'direction', 'lags': 5, 'hidden': (8,), 'threshold': 'base', 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.38  exp 0.65  chg 638  (1.0s)
+  A {'mode': 'direction', 'lags': 5, 'hidden': (32, 16), 'threshold': 0.5, 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.63  exp 0.96  chg 144  (5.3s)
+  A {'mode': 'direction', 'lags': 5, 'hidden': (32, 16), 'threshold': 'base', 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.20  exp 0.60  chg 707  (5.1s)
+  A {'mode': 'direction', 'lags': 10, 'hidden': (8,), 'threshold': 0.5, 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.75  exp 0.88  chg 314  (0.7s)
+  A {'mode': 'direction', 'lags': 10, 'hidden': (8,), 'threshold': 'base', 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.10  exp 0.56  chg 795  (0.7s)
+  A {'mode': 'direction', 'lags': 10, 'hidden': (32, 16), 'threshold': 0.5, 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.86  exp 0.91  chg 255  (2.8s)
+  A {'mode': 'direction', 'lags': 10, 'hidden': (32, 16), 'threshold': 'base', 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.18  exp 0.62  chg 671  (2.9s)
+  A {'mode': 'direction', 'lags': 20, 'hidden': (8,), 'threshold': 0.5, 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.81  exp 0.82  chg 528  (1.2s)
+  A {'mode': 'direction', 'lags': 20, 'hidden': (8,), 'threshold': 'base', 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.75  exp 0.57  chg 846  (1.3s)
+  A {'mode': 'direction', 'lags': 20, 'hidden': (32, 16), 'threshold': 0.5, 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.91  exp 0.87  chg 348  (2.6s)
+  A {'mode': 'direction', 'lags': 20, 'hidden': (32, 16), 'threshold': 'base', 'l2': 0.01, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.52  exp 0.56  chg 738  (2.3s)
+  C {'mode': 'sharpe', 'hidden': (8,), 'turnover_bps': 5.0, 'l2': 0.001, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.81  exp 0.51  chg 2011  (0.4s)
+  C {'mode': 'sharpe', 'hidden': (8,), 'turnover_bps': 5.0, 'l2': 0.001, 'band': 0.1, 'scale': 'none'} -> WF Sharpe 0.84  exp 0.50  chg 54  (0.4s)
+  C {'mode': 'sharpe', 'hidden': (8,), 'turnover_bps': 5.0, 'l2': 0.1, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.82  exp 0.51  chg 2011  (0.4s)
+  C {'mode': 'sharpe', 'hidden': (8,), 'turnover_bps': 5.0, 'l2': 0.1, 'band': 0.1, 'scale': 'none'} -> WF Sharpe 0.86  exp 0.51  chg 51  (0.4s)
+  C {'mode': 'sharpe', 'hidden': (8,), 'turnover_bps': 25.0, 'l2': 0.001, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.82  exp 0.53  chg 2011  (0.4s)
+  C {'mode': 'sharpe', 'hidden': (8,), 'turnover_bps': 25.0, 'l2': 0.001, 'band': 0.1, 'scale': 'none'} -> WF Sharpe 0.87  exp 0.53  chg 37  (0.5s)
+  C {'mode': 'sharpe', 'hidden': (8,), 'turnover_bps': 25.0, 'l2': 0.1, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.84  exp 0.53  chg 2011  (0.5s)
+  C {'mode': 'sharpe', 'hidden': (8,), 'turnover_bps': 25.0, 'l2': 0.1, 'band': 0.1, 'scale': 'none'} -> WF Sharpe 0.84  exp 0.52  chg 45  (0.6s)
+  C {'mode': 'sharpe', 'hidden': (32, 16), 'turnover_bps': 5.0, 'l2': 0.001, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.80  exp 0.48  chg 2011  (1.6s)
+  C {'mode': 'sharpe', 'hidden': (32, 16), 'turnover_bps': 5.0, 'l2': 0.001, 'band': 0.1, 'scale': 'none'} -> WF Sharpe 0.84  exp 0.47  chg 154  (1.5s)
+  C {'mode': 'sharpe', 'hidden': (32, 16), 'turnover_bps': 5.0, 'l2': 0.1, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.90  exp 0.49  chg 2011  (1.3s)
+  C {'mode': 'sharpe', 'hidden': (32, 16), 'turnover_bps': 5.0, 'l2': 0.1, 'band': 0.1, 'scale': 'none'} -> WF Sharpe 0.90  exp 0.48  chg 11  (1.3s)
+  C {'mode': 'sharpe', 'hidden': (32, 16), 'turnover_bps': 25.0, 'l2': 0.001, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.89  exp 0.51  chg 2011  (1.3s)
+  C {'mode': 'sharpe', 'hidden': (32, 16), 'turnover_bps': 25.0, 'l2': 0.001, 'band': 0.1, 'scale': 'none'} -> WF Sharpe 0.86  exp 0.50  chg 20  (1.3s)
+  C {'mode': 'sharpe', 'hidden': (32, 16), 'turnover_bps': 25.0, 'l2': 0.1, 'band': 0.0, 'scale': 'none'} -> WF Sharpe 0.89  exp 0.52  chg 2011  (1.2s)
+  C {'mode': 'sharpe', 'hidden': (32, 16), 'turnover_bps': 25.0, 'l2': 0.1, 'band': 0.1, 'scale': 'none'} -> WF Sharpe 0.92  exp 0.50  chg 5  (1.3s)
+  D {'model': 'har', 'horizon': 5, 'hidden': (0,)} -> WF Sharpe 0.81  exp 0.98  chg 81  (0.6s)
+  D {'model': 'har', 'horizon': 21, 'hidden': (0,)} -> WF Sharpe 0.83  exp 0.95  chg 56  (0.1s)
+  D {'model': 'mlp', 'horizon': 5, 'hidden': (16,)} -> WF Sharpe 0.85  exp 0.97  chg 72  (12.2s)
+  D {'model': 'mlp', 'horizon': 5, 'hidden': (32, 16)} -> WF Sharpe 0.82  exp 0.97  chg 94  (5.9s)
+  D {'model': 'mlp', 'horizon': 21, 'hidden': (16,)} -> WF Sharpe 0.79  exp 0.95  chg 75  (11.0s)
+  D {'model': 'mlp', 'horizon': 21, 'hidden': (32, 16)} -> WF Sharpe 0.81  exp 0.93  chg 63  (5.9s)
+  D-baseline {'model': 'rv20', 'horizon': 5} -> WF Sharpe 0.91  exp 0.96  chg 36  (0.0s)
+  D-baseline {'model': 'ewma', 'horizon': 5} -> WF Sharpe 0.91  exp 0.94  chg 26  (0.0s)
+  B {'mode': 'direction', 'seq_len': 20, 'hidden': 16} -> WF Sharpe 0.16  exp 0.39  chg 85  (8.6s)
+  B {'mode': 'direction', 'seq_len': 63, 'hidden': 16} -> WF Sharpe 0.18  exp 0.39  chg 91  (38.3s)
+  C-LSTM {'mode': 'sharpe', 'seq_len': 20, 'hidden': 16, 'turnover_bps': 25.0} -> WF Sharpe 0.91  exp 0.52  chg 2011  (4.7s)
+  C-LSTM {'mode': 'sharpe', 'seq_len': 63, 'hidden': 16, 'turnover_bps': 25.0} -> WF Sharpe 0.92  exp 0.53  chg 2011  (23.5s)
+
+Best per family (walk-forward 2011-2018, train only):
+    family      mode lags   hidden threshold   l2 band scale   sharpe     cagr      vol    max_dd  exposure  changes turnover_bps model horizon seq_len
+         A direction   20 (32, 16)       0.5 0.01  0.0  none 0.907870 0.133852 0.145486 -0.153524  0.869284      348          NaN   NaN     NaN     NaN
+         B direction  NaN       16       NaN  NaN  NaN   NaN 0.181355 0.017096 0.095685 -0.179842  0.391153       91          NaN   NaN     NaN      63
+         C    sharpe  NaN (32, 16)       NaN  0.1  0.1  none 0.916912 0.081707 0.085053 -0.118631  0.503481        5         25.0   NaN     NaN     NaN
+    C-LSTM    sharpe  NaN       16       NaN  NaN  NaN   NaN 0.916144 0.084263 0.087979 -0.117723  0.529282     2011         25.0   NaN     NaN      63
+         D       NaN  NaN    (16,)       NaN  NaN  NaN   NaN 0.850013 0.134681 0.158588 -0.201401  0.968891       72          NaN   mlp       5     NaN
+D-baseline       NaN  NaN      NaN       NaN  NaN  NaN   NaN 0.910578 0.144039 0.156745 -0.179920  0.959698       36          NaN  rv20       5     NaN
+Seed dispersion A: {'seed_mean': 0.6617750428167992, 'seed_sd': 0.2009428125727515, 'seeds': [np.float64(0.509), np.float64(0.971), np.float64(0.46), np.float64(0.7), np.float64(0.669)]}
+Seed dispersion C: {'seed_mean': 0.8871657602419744, 'seed_sd': 0.05144864668461761, 'seeds': [np.float64(0.816), np.float64(0.881), np.float64(0.876), np.float64(0.958), np.float64(0.906)]}
+
+Validation (looked at once):
+             train_sharpe val_sharpe         val_ci  val_cagr   val_vol val_max_dd val_exposure val_changes train_max_dd   val_auc val_share_long
+buy_and_hold     0.563894   1.384846    [0.29, 2.6]  0.379356  0.249142  -0.285594          1.0           0     -0.53404       NaN            NaN
+A                1.638512    1.08897  [-0.26, 2.69]  0.239087   0.21011  -0.331555     0.792602         241    -0.179892  0.504301       0.792602
+B                0.577963   0.865807  [-0.18, 2.07]  0.110536  0.120296  -0.131552     0.612946         141    -0.183925       NaN            NaN
+C                0.772217   1.508296   [0.38, 2.75]  0.085824   0.05014  -0.058979     0.227333           8    -0.108897       NaN            NaN
+C-LSTM           0.962352   1.447632   [0.29, 2.61]  0.148232  0.092979  -0.099638     0.459568         757    -0.139324       NaN            NaN
+D                0.643448   1.516864   [0.34, 2.58]  0.315815  0.187375  -0.189374     0.934226          84    -0.429736       NaN            NaN
+D-baseline       0.711405   1.471524   [0.32, 2.56]  0.288782  0.177844  -0.190106     0.880776          39    -0.382882       NaN            NaN
+
+v2b (post-hoc rescaling): {'config': '{"mode": "sharpe", "hidden": "(32, 16)", "l2": "0.1", "band": "0.1", "scale": "vol", "turnover_bps": "25.0"}', 'wf_sharpe': np.float64(0.8852495054402121), 'wf_exposure': 0.9714237047018932, 'wf_changes': 9, 'wf_max_dd': -0.2219698465342984, 'adopted_by_rule': True, 'scale_k': 3.8444753315463487, 'train_sharpe': np.float64(0.7233570478010786), 'train_cagr': 0.12124164874722787, 'train_max_dd': -0.3917786381023257, 'train_exposure': 0.8152689619647454, 'val_sharpe': np.float64(1.5320833757142853), 'val_ci': [0.37, 2.68], 'val_cagr': 0.250819090527971, 'val_vol': np.float64(0.14810317638858136), 'val_max_dd': -0.1620541837339765, 'val_exposure': 0.7377842683332152, 'val_changes': 27}

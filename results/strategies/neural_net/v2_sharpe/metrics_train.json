@@ -1,0 +1,20 @@
+{
+  "mean_daily_return": 0.00020586620778802078,
+  "std_daily_return": 0.0032491894480645967,
+  "annualized_mean_return": 0.05187828436258124,
+  "annualized_return": 0.051842209230502645,
+  "annualized_volatility": 0.051579283452684845,
+  "sharpe_ratio": 0.772217003645583,
+  "sortino_ratio": 1.0953738550861167,
+  "cumulative_return": 1.027088903673992,
+  "max_drawdown": -0.10889673834385627,
+  "calmar_ratio": 0.4760676032995939,
+  "hit_rate": 0.6030664395229983,
+  "n_days": 3523,
+  "n_position_changes": 36,
+  "avg_holding_days": 97.86111111111111,
+  "exposure": 0.27754458466417287,
+  "pct_days_long": 0.9017882486517173,
+  "pct_days_short": 0.0,
+  "annual_turnover": 0.30330610973494715
+}

@@ -13,8 +13,8 @@ from functools import partial
 
 from qqq.strategies.moving_average import MovingAverageCrossover
 
-# Plain crossover (no re-entry) - the tuned defaults turn re-entry on.
-MA = partial(MovingAverageCrossover, reentry_window=None)
+# Plain crossover (no re-entry, no vol cap) - the tuned defaults turn both on.
+MA = partial(MovingAverageCrossover, reentry_window=None, vol_target=None)
 
 
 def _prices(close):
@@ -164,7 +164,7 @@ def test_reentry_never_reduces_exposure(qqq):
 def test_matches_reference_on_qqq(kw, qqq):
     strat = MovingAverageCrossover(kw["short"], kw["long_"], kw.get("ma_type", "sma"),
                                    kw.get("band", 0.0), kw.get("allow_short", False),
-                                   reentry_window=kw.get("reentry"))
+                                   reentry_window=kw.get("reentry"), vol_target=None)
     got = strat.generate_positions(qqq)
     exp = reference_positions(qqq, **kw)
     pd.testing.assert_series_equal(got, exp, check_names=False)
@@ -191,4 +191,82 @@ def test_defaults_match_tuning():
     assert MovingAverageCrossover().params() == {
         "short_window": 50, "long_window": 250, "ma_type": "sma", "band": 0.0,
         "allow_short": False, "reentry_window": 50,
+        "vol_target": "train", "vol_window": 20, "vol_band": 0.1,
     }
+
+
+# ------------------------------------------------------------- vol cap ---
+def reference_vol_cap(signal, prices, target, window, band):
+    """Independent re-implementation of the volatility cap."""
+    r = prices["AdjClose"].pct_change()
+    vol = r.rolling(window, min_periods=window).std() * np.sqrt(252)
+    out, cur, prev = [], 0.0, 0.0
+    for t in range(len(signal)):
+        s = signal.iloc[t]
+        scale = 1.0 if np.isnan(vol.iloc[t]) else min(1.0, target / vol.iloc[t])
+        x = s * scale
+        if s != prev or x == 0 or abs(x) == 1 or abs(x - cur) > band:
+            cur = x
+        out.append(cur)
+        prev = s
+    return pd.Series(out, index=signal.index)
+
+
+@pytest.mark.parametrize("target,band", [(0.20, 0.0), (0.25, 0.2), (0.15, 0.1)])
+def test_vol_cap_matches_reference(target, band, qqq):
+    base = MovingAverageCrossover(vol_target=None).generate_positions(qqq)
+    got = MovingAverageCrossover(vol_target=target, vol_band=band).generate_positions(qqq)
+    exp = reference_vol_cap(base, qqq, target, 20, band)
+    pd.testing.assert_series_equal(got, exp, check_names=False)
+
+
+def test_vol_cap_never_levers_or_flips(qqq):
+    base = MovingAverageCrossover(vol_target=None, allow_short=True,
+                                  reentry_window=None).generate_positions(qqq)
+    capped = MovingAverageCrossover(vol_target=0.20, vol_band=0.1, allow_short=True,
+                                    reentry_window=None).generate_positions(qqq)
+    assert (capped.abs() <= base.abs() + 1e-12).all()
+    assert (np.sign(capped) == np.sign(base)).all()
+
+
+def test_vol_cap_cuts_exposure_in_2008(qqq):
+    capped = MovingAverageCrossover(vol_target=0.20, vol_band=0.0).generate_positions(qqq)
+    base = MovingAverageCrossover(vol_target=None).generate_positions(qqq)
+    calm, storm = slice("2013-01-01", "2013-12-31"), slice("2008-09-15", "2008-12-31")
+    assert capped[calm].mean() == pytest.approx(base[calm].mean(), abs=0.05)  # calm: ~unchanged
+    assert capped[storm].sum() < 0.6 * base[storm].sum() or base[storm].sum() == 0
+
+
+def test_vol_band_reduces_trading(qqq):
+    n = {b: trade_stats(run_backtest(qqq, MovingAverageCrossover(vol_target=0.25, vol_band=b)
+                                     .generate_positions(qqq)))["n_position_changes"]
+         for b in (0.0, 0.1, 0.2)}
+    assert n[0.0] > n[0.1] > n[0.2]
+
+
+def test_vol_target_train_is_fitted_on_train_only(qqq):
+    from qqq.data import split
+    train, _, _ = split(qqq)
+    s = MovingAverageCrossover(vol_target="train")
+    with pytest.raises(ValueError):
+        s.generate_positions(qqq)
+    s.fit(train)
+    expected = train["AdjClose"].pct_change().std() * np.sqrt(252)
+    assert s.fitted_vol_target_ == pytest.approx(expected)
+    assert 0.18 < s.fitted_vol_target_ < 0.23
+    s2 = MovingAverageCrossover(vol_target="train").fit(qqq)  # different data -> different target
+    assert s2.fitted_vol_target_ != pytest.approx(expected)
+
+
+@pytest.mark.parametrize("kwargs", [dict(vol_target=0), dict(vol_target="test"),
+                                    dict(vol_target=0.2, vol_band=1.0),
+                                    dict(vol_target=0.2, vol_window=1)])
+def test_invalid_vol_params(kwargs):
+    with pytest.raises(ValueError):
+        MovingAverageCrossover(**kwargs)
+
+
+@pytest.mark.parametrize("strat", [MovingAverageCrossover(vol_target=0.25, vol_band=0.2),
+                                   MovingAverageCrossover(vol_target="train", vol_band=0.1)])
+def test_vol_cap_has_no_lookahead(strat, qqq):
+    check_no_lookahead(strat, qqq)

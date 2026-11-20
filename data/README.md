@@ -15,7 +15,21 @@
 - `features.lagged_ohlc_features` rescales O/H/L/C by `AdjClose/Close` so intraday features are consistent with `AdjClose`.
 - QQQ's 2:1 split (March 2000) is before our window.
 
-Reproduce with `python -m qqq.data`. Yahoo occasionally revises historical dividends, so `AdjClose` can differ slightly. **The committed file is the source of truth for every number in the report.**
+Reproduce both files with `python -m qqq.data`. Yahoo occasionally revises historical dividends, so `AdjClose` can differ slightly. **The committed file is the source of truth for every number in the report.**
+
+## `raw/IRX.csv`: risk-free rate
+| | |
+|---|---|
+| Series | CBOE 13-week US Treasury bill yield index (`^IRX`), annualized, in percent |
+| Source | Yahoo Finance via `yfinance` |
+| Range | 2004-12-01 → 2026-10-30 (5,509 days) |
+| Columns | `Date, irx_pct` |
+
+Used for two things (`config.CASH_EARNS_RISK_FREE = True`):
+1. **Uninvested capital earns T-bills.** When a strategy holds a position `p`, the remaining `1 − |p|` earns that day's T-bill return. This follows Faber (2007) and standard practice. Short-sale proceeds are conservatively assumed to earn nothing.
+2. **Sharpe and Sortino are measured in excess of T-bills,** using the textbook definition.
+
+Daily rate earned on day *t*: `(1 + y_{t−1}/100)^(1/252) − 1`, using the yield known at the previous close (`qqq.data.risk_free_daily`). Yields averaged about 3–5% in 2005–07 and 2023–25 and close to 0% in 2009–15 and 2020–21.
 
 ## Sample periods (`src/qqq/config.py`)
 | Period | Dates | Trading days | Mean daily ret | Std daily ret | Cumulative |

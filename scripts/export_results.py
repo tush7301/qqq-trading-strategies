@@ -26,10 +26,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import pandas as pd  # noqa: E402
 
 from qqq import config  # noqa: E402
-from qqq.backtest import trade_stats  # noqa: E402
 from qqq.data import load_prices  # noqa: E402
 from qqq.evaluate import DEV_PERIODS, PERIODS, backtest_strategy  # noqa: E402
-from qqq.metrics import annual_returns, compute_metrics  # noqa: E402
+from qqq.metrics import annual_returns  # noqa: E402
 from qqq.reporting import (format_table, plot_annual_returns, plot_drawdowns,  # noqa: E402
                            plot_equity_curves)
 from qqq.strategies import REGISTRY, BuyAndHold  # noqa: E402
@@ -54,8 +53,7 @@ def export(strategy_name: str, label: str, params: dict) -> Path:
     rows = {}
     for period in DEV_PERIODS:
         for name, r in ((label, res), ("buy_and_hold", bh)):
-            sub = r.slice(*PERIODS[period])
-            m = compute_metrics(sub.returns) | trade_stats(sub)
+            m = r.slice(*PERIODS[period]).metrics()
             rows[(name, period)] = m
             if name == label:
                 (out / f"metrics_{period}.json").write_text(json.dumps(m, indent=2) + "\n")

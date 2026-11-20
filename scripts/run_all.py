@@ -24,10 +24,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import pandas as pd  # noqa: E402
 
 from qqq import config  # noqa: E402
-from qqq.backtest import run_backtest, trade_stats  # noqa: E402
+from qqq.backtest import run_backtest  # noqa: E402
 from qqq.data import load_prices, split  # noqa: E402
 from qqq.evaluate import PERIODS  # noqa: E402
-from qqq.metrics import compute_metrics  # noqa: E402
 from qqq.reporting import (comparison_table, plot_annual_returns, plot_drawdowns,  # noqa: E402
                            plot_equity_curves, plot_risk_return, save_table)
 from qqq.strategies import REGISTRY, validate_positions  # noqa: E402
@@ -62,8 +61,7 @@ def main(include_test: bool, source: str) -> None:
         start, end = PERIODS[period]
         table = {}
         for name, res in results.items():
-            sub = res.slice(start, end)
-            m = compute_metrics(sub.returns) | trade_stats(sub)
+            m = res.slice(start, end).metrics()
             table[name] = m
             payload = m | {"params": positions[name][0].params()}
             (config.METRICS_DIR / f"{name}_{period}.json").write_text(json.dumps(payload, indent=2))
@@ -89,9 +87,8 @@ def main(include_test: bool, source: str) -> None:
     v0, v1 = PERIODS["validation"]
     rows = {}
     for name, (_, pos) in positions.items():
-        rows[name] = {f"{c:g} bps": compute_metrics(
-            run_backtest(prices, pos, cost_bps=c).slice(v0, v1).returns)["sharpe_ratio"]
-            for c in COST_GRID}
+        rows[name] = {f"{c:g} bps": run_backtest(prices, pos, cost_bps=c).slice(v0, v1)
+                      .metrics()["sharpe_ratio"] for c in COST_GRID}
     cs = pd.DataFrame(rows).T
     cs.to_csv(config.METRICS_DIR / "cost_sensitivity_validation.csv")
     (config.METRICS_DIR / "cost_sensitivity_validation.md").write_text(

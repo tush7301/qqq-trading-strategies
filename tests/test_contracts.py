@@ -33,6 +33,15 @@ def test_committed_data_matches_contract(prices):
     assert len(prices) > 5000
 
 
+def test_committed_tbill_data():
+    from qqq.data import load_risk_free_yield
+    y = load_risk_free_yield()
+    assert config.RISK_FREE_CSV.exists() and y.notna().all()
+    assert y.index[0] <= pd.Timestamp(config.DATA_START)
+    assert y.index[-1] >= pd.Timestamp(config.DATA_END) - pd.Timedelta(days=7)
+    assert y.between(-0.5, 20).all()
+
+
 def test_synthetic_matches_contract():
     validate_prices(load_prices(source="synthetic"))
 

@@ -7,6 +7,9 @@ No NaNs. AdjClose is split/dividend adjusted and is what returns are computed on
 
 ``load_prices(source="synthetic")`` returns fake GBM data with the same shape -
 handy for unit tests and for sanity-checking that a strategy has no edge on noise.
+
+``risk_free_daily(index)`` returns the daily T-bill return EARNED on each day
+(cash held from close t-1 to close t earns the rate known at close t-1).
 """
 from __future__ import annotations
 
@@ -103,6 +106,48 @@ def synthetic_prices(start: str, end: str, seed: int = config.RANDOM_SEED) -> pd
     )
 
 
+
+# ------------------------------------------------------------ risk-free rate ---
+def download_risk_free(save: bool = True) -> pd.Series:
+    """13-week T-bill yield (percent, annualized) from Yahoo (^IRX)."""
+    import yfinance as yf
+
+    start = (pd.Timestamp(config.DATA_START) - pd.Timedelta(days=31)).strftime("%Y-%m-%d")
+    end = (pd.Timestamp(config.DATA_END) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+    raw = yf.download(config.RISK_FREE_TICKER, start=start, end=end, auto_adjust=False,
+                      progress=False, multi_level_index=False)
+    if raw.empty:
+        raise RuntimeError("yfinance returned no T-bill data")
+    s = raw["Close"].astype("float64").rename("irx_pct")
+    s.index = pd.DatetimeIndex(s.index.tz_localize(None) if s.index.tz else s.index, name="Date")
+    s = s[~s.index.duplicated()].sort_index().dropna()
+    if save:
+        s.to_frame().to_csv(config.RISK_FREE_CSV, float_format="%.4f")
+    return s
+
+
+def load_risk_free_yield() -> pd.Series:
+    """Annualized 13-week T-bill yield in percent, as committed in data/raw/IRX.csv."""
+    return pd.read_csv(config.RISK_FREE_CSV, parse_dates=["Date"], index_col="Date")["irx_pct"]
+
+
+def risk_free_daily(index: pd.DatetimeIndex) -> pd.Series:
+    """Daily T-bill return earned ON each date in `index`.
+
+    rf_t = (1 + y_{t-1}/100)^(1/252) - 1, where y_{t-1} is the yield known at the
+    previous close (forward-filled over holidays). First day -> 0. Dates outside the
+    committed data (e.g. synthetic tests) are filled with the nearest known yield,
+    or 0 if the file is missing.
+    """
+    if not config.RISK_FREE_CSV.exists():
+        return pd.Series(0.0, index=index, name="rf")
+    y = load_risk_free_yield()
+    y = y.reindex(y.index.union(index)).ffill().bfill().reindex(index)
+    daily = (1 + y / 100) ** (1 / config.TRADING_DAYS_PER_YEAR) - 1
+    return daily.shift(1).fillna(0.0).rename("rf")
+
 if __name__ == "__main__":
     d = download_prices()
     print(f"saved {len(d)} rows {d.index[0].date()} -> {d.index[-1].date()} to {config.PRICES_CSV}")
+    r = download_risk_free()
+    print(f"saved {len(r)} rows {r.index[0].date()} -> {r.index[-1].date()} to {config.RISK_FREE_CSV}")

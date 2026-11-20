@@ -34,7 +34,7 @@ All shared infrastructure is **already built and tested**: data, features, the b
 |---|---|
 | `qqq.data` | `load_prices()` loads the committed QQQ OHLCV (2005-01-03 → 2026-10-30, 5,492 days); `split()` returns train/val/test; a synthetic data option exists for noise tests |
 | `qqq.features` | `sma, ema, rsi, macd, bollinger_pct_b, rolling_volatility, momentum, zscore, lagged_ohlc_features, technical_indicators, forward_return` (target only). All causal and tested |
-| `qqq.backtest` | `run_backtest(prices, positions, cost_bps)` returns net/gross returns, equity, turnover. `trade_stats()` gives # trades, holding period, exposure, turnover |
+| `qqq.backtest` | `run_backtest(prices, positions, cost_bps)` returns net/gross returns, equity, turnover; **uninvested cash earns the T-bill rate**. `result.metrics()` gives all metrics (Sharpe in excess of T-bills) plus # trades, holding period, exposure, turnover |
 | `qqq.metrics` | `compute_metrics()` (12 metrics), `annual_returns`, `drawdown_series`, `bootstrap_sharpe_ci`, `excess_return_test` |
 | `qqq.evaluate` | **The main tools for strategy owners:** `evaluate(strategy)`, `grid_search(cls, grid)`, `check_no_lookahead(strategy)`, `backtest_strategy()` |
 | `qqq.reporting` | Leaderboard tables (CSV and Markdown), equity / drawdown / risk-return / annual-return charts |
@@ -45,8 +45,10 @@ All shared infrastructure is **already built and tested**: data, features, the b
 
 | Period | CAGR | Ann. vol | Sharpe | Max DD |
 |---|---|---|---|---|
-| Train 2005–2018 | 11.1% | 20.2% | 0.62 | −53.4% |
-| Validation 2019–2021 | 37.9% | 24.9% | 1.42 | −28.6% |
+| Train 2005–2018 | 11.1% | 20.2% | 0.56 | −53.4% |
+| Validation 2019–2021 | 37.9% | 24.9% | 1.39 | −28.6% |
+
+Sharpe is in excess of the 13-week T-bill rate.
 
 Validation was an exceptionally strong bull market. Beating buy-and-hold on raw return there will be hard, so we judge on **risk-adjusted** metrics and drawdown (see §4).
 

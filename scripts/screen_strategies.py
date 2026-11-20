@@ -100,14 +100,19 @@ def rsi2(p, entry=10.0, exit_=70.0, trend=200):
 
 def turn_of_month(p):
     """McConnell & Xu (2008): hold from the last trading day of a month through the
-    3rd trading day of the next. position[t] = 1 if day t+1 is in the window. This reads
-    the exchange calendar one day ahead (published in advance), so it would trip the
-    truncation test at the cut date - fine for a screen, not for a slot."""
-    month = pd.Series(p.index.to_period("M"), index=p.index)
-    day_of_month = month.groupby(month).cumcount() + 1
-    days_to_end = month.groupby(month).cumcount(ascending=False)  # 0 = last trading day
-    in_window = (day_of_month <= 3) | (days_to_end == 0)
-    return in_window.shift(-1, fill_value=False).astype(float)
+    3rd trading day of the next. position[t] = 1 if the NEXT weekday is in the window.
+
+    Leak-free: the window is computed on a Mon-Fri calendar that is fully known in
+    advance, never from the future rows of the price index. (Exchange holidays shift
+    the window by a day at most a few times a year.)"""
+    out = pd.Series(0.0, index=p.index)
+    for t in p.index:
+        nxt = t + pd.offsets.BDay(1)
+        month_days = pd.bdate_range(nxt.replace(day=1), nxt + pd.offsets.BMonthEnd(0))
+        k = month_days.get_loc(nxt)
+        if k <= 2 or k == len(month_days) - 1:
+            out[t] = 1.0
+    return out
 
 
 def screen_strategies() -> dict[str, Strategy]:

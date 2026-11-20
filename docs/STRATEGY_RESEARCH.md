@@ -4,7 +4,7 @@
 
 **Method:** a literature review, then a screen of the textbook version of each strategy through our own engine. The screen uses no tuning, 5 bps costs, cash earning T-bills and Sharpe in excess of T-bills. It covers **train and validation only** and never touches the test period.
 
-Reproduce: `python scripts/screen_strategies.py` (≈15 s). It writes `results/research/strategy_screen.md`.
+Reproduce: `python scripts/screen_strategies.py` (≈15 s; writes `results/research/strategy_screen.md`) and `python scripts/leakage_audit.py` (≈20 s; exits 1 on any leak).
 
 ---
 
@@ -64,7 +64,7 @@ Textbook settings, no tuning: 5 bps one-way costs, uninvested cash earns 13-week
 | 12-month momentum | 8.5% | 15.5% | 0.53 | [0.09, 1.05] | −32.0% | 0.27 | 81% | 56 |
 | RSI(2) + SMA200 filter | 5.0% | 7.6% | 0.52 | [0.12, 1.01] | −11.7% | 0.43 | 14% | 228 |
 | RSI(2), no filter | 6.7% | 12.6% | 0.48 | [0.12, 0.86] | −19.5% | 0.34 | 22% | 310 |
-| Turn of month | 2.0% | 8.5% | 0.13 | [−0.33, 0.66] | −26.1% | 0.08 | 19% | 337 |
+| Turn of month | 2.3% | 8.2% | 0.18 | [−0.29, 0.70] | −19.5% | 0.12 | 18% | 337 |
 
 **Validation (2019–2021)**
 
@@ -79,7 +79,7 @@ Textbook settings, no tuning: 5 bps one-way costs, uninvested cash earns 13-week
 | Trend blend 1/3/12m × vol target | 16.9% | 12.5% | 1.25 | [0.19, 2.42] | **−10.4%** | 1.63 | 69% | 489 |
 | Trend blend 1/3/12m | 22.4% | 17.0% | 1.23 | [0.12, 2.46] | −18.9% | 1.18 | 85% | 84 |
 | 12-month momentum | 25.4% | 23.8% | 1.04 | [−0.01, 2.46] | −31.4% | 0.81 | 97% | 15 |
-| Turn of month | 8.5% | 11.0% | 0.72 | [−0.34, 1.78] | −7.9% | 1.07 | 19% | 72 |
+| Turn of month | 6.7% | 10.7% | 0.58 | [−0.34, 1.75] | −8.0% | 0.83 | 18% | 72 |
 | RSI(2) + SMA200 filter | 5.1% | 9.9% | 0.47 | [−0.26, 1.40] | −8.6% | 0.59 | 13% | 48 |
 | RSI(2), no filter | 6.5% | 16.1% | 0.42 | [−0.06, 1.44] | −17.1% | 0.38 | 15% | 48 |
 
@@ -133,6 +133,27 @@ Inputs are `lagged_ohlc_features(lags=10)`. Models are fit on train with a scale
 | Validation | 73% | 55% | 162% |
 
 This matches the overnight-premium literature. We can't trade it, for the cost and engine reasons in §2.
+
+### 3.6 Leakage audit
+
+`python scripts/leakage_audit.py` runs four independent checks on every implemented slot and every screen strategy. Positions are compared exactly, and no test-period performance is computed.
+
+| Check | What it catches | Result |
+|---|---|---|
+| **1. Truncation**: positions up to date T must be identical with or without the rows after T. Cuts are inside train, at both period boundaries, in the COVID crash, and inside test | Centered windows, negative shifts, using tomorrow's bar | All 11 pass |
+| **2. Alternate future**: replace everything after T with a mirrored (sign-flipped) or random future. Positions up to T must not change | The same leaks as check 1, plus normalising with statistics of the whole series | All 11 pass |
+| **3. Hidden data access**: `fit()` and `generate_positions()` may not call `load_prices` or `read_csv` | Reading the full file behind the engine's back | All 11 pass |
+| **4. Placebo**: on 20 random-walk price paths there is nothing to predict, so a leak-free strategy cannot systematically beat buy-and-hold | Any peek at future returns, however it is wired in | All 11 pass (every edge ≤ 0) |
+
+Two deliberately broken strategies prove the checks work:
+- **"Peek at tomorrow's return"** is caught by checks 1, 2 and 4. It has a +9.95 Sharpe edge on random walks.
+- **"Normalise with the full file's mean and std"** is caught by check 3.
+
+Turn-of-month was the only screen strategy that read the future price index, to work out "is tomorrow the last trading day?". It now uses a Mon–Fri calendar that is known in advance.
+
+**Data notes:**
+- `AdjClose` is back-adjusted for later dividends. All our features are ratios over short windows, so the adjustment cancels out and leaks nothing.
+- The T-bill return earned on day *t* uses the yield known at the close of *t−1*.
 
 ---
 

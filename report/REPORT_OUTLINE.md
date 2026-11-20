@@ -1,13 +1,14 @@
-# Final Report Outline (WS5 edits; section owners write into `report/sections/`)
+# Final Report Outline
 
-| § | Section | Writer | Target length |
-|---|---|---|---|
-| 1 | Trading problem & objectives: QQQ, why it is interesting, what we optimize (risk-adjusted return vs buy-and-hold) | WS5 | 1 p |
-| 2 | Historical data: source, period, cleaning, summary stats per period, train/validation/test split | WS1 | 1 p |
-| 3 | Back-testing procedure: timing convention, look-ahead safeguards, transaction costs, metric formulas | WS2 | 1 p |
-| 4.1 | Strategy 1: Moving-average crossover (method, parameter search, chosen params) | WS3 | 1.5 p |
-| 4.2 | Strategy 2: Neural network (features, architecture, training, tuning, overfitting checks) | WS4 | 1.5 p |
-| 4.3 | *(Optional)* Strategy 3 | WS1 | 1 p |
-| 5 | Results: comparison table (mean/std daily + annualized, cumulative return, max DD, Sharpe) for validation and **test**; equity curves; drawdowns; risk-return scatter; cost sensitivity; sub-periods | WS5 (+ WS2 for significance) | 2–3 p |
-| 6 | Conclusions: strengths, weaknesses and limitations of each strategy; what we would do next | All → WS5 edits | 1 p |
-| A | Appendix: reproducibility instructions, code map, extra figures | WS5 | — |
+Each author writes Markdown in `report/sections/`; the team representative assembles it.
+
+| § | Section | Writer | Source material already in repo | Length |
+|---|---|---|---|---|
+| 1 | Trading problem & objectives: QQQ background, goal = risk-adjusted performance vs buy-and-hold | split Dec 6 | — | 1 p |
+| 2 | Historical data: source, period, cleaning, per-period stats, train/val/test split | split Dec 6 | `data/README.md` | 1 p |
+| 3 | Back-testing procedure: timing convention, look-ahead safeguards, costs, metric formulas | split Dec 6 | docstrings of `backtest.py`, `metrics.py` | 1 p |
+| 4.1–4.5 | One section per strategy: intuition, method, parameter search, chosen params, train vs validation | slot owners | slot notebooks | 1–1.5 p each |
+| 5 | Strategy selection: leaderboard, selection rule (Plan §4), why the winner won | representative | `results/metrics/leaderboard_validation.md` | 1 p |
+| 6 | Out-of-sample results (test): full table for **all** strategies + benchmark (mean/std daily + annualized, CAGR, Sharpe, cum. return, max DD), equity curves, drawdowns, risk-return, cost sensitivity, Sharpe CI | split Dec 6 | `results/` after Dec 14 | 2–3 p |
+| 7 | Conclusions: strengths, weaknesses and limitations of each strategy; next steps | everyone → representative edits | — | 1 p |
+| A | Appendix: reproducibility steps, code map | representative | `README.md` | — |

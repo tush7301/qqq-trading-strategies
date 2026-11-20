@@ -1,12 +1,12 @@
-"""WS1 - Data. Owner: <WS1 owner>
+"""Data loading (shared infrastructure - done).
 
 Contract: ``load_prices()`` returns a DataFrame
     index   : DatetimeIndex named "Date", trading days, ascending, unique
     columns : Open, High, Low, Close, AdjClose, Volume  (float64)
 No NaNs. AdjClose is split/dividend adjusted and is what returns are computed on.
 
-Until WS1 commits ``data/raw/QQQ.csv``, everyone can develop against
-``load_prices(source="synthetic")``, which has the exact same shape.
+``load_prices(source="synthetic")`` returns fake GBM data with the same shape -
+handy for unit tests and for sanity-checking that a strategy has no edge on noise.
 """
 from __future__ import annotations
 
@@ -45,11 +45,29 @@ def load_prices(
     return df
 
 
-def download_prices() -> pd.DataFrame:
-    """WS1 TODO: download QQQ daily OHLCV (e.g. yfinance, auto_adjust=False),
-    rename 'Adj Close' -> 'AdjClose', clean, save to config.PRICES_CSV.
-    Document source + download date in data/README.md."""
-    raise NotImplementedError("WS1")
+def download_prices(save: bool = True) -> pd.DataFrame:
+    """Download QQQ daily OHLCV from Yahoo Finance and (optionally) save to
+    data/raw/QQQ.csv. The committed CSV is the source of truth for the project;
+    re-running this may change AdjClose slightly as Yahoo revises dividends.
+
+        python -m qqq.data   # re-download
+    """
+    import yfinance as yf
+
+    # yfinance's `end` is exclusive -> add one day.
+    end = (pd.Timestamp(config.DATA_END) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+    raw = yf.download(config.TICKER, start=config.DATA_START, end=end,
+                      auto_adjust=False, progress=False, multi_level_index=False)
+    if raw.empty:
+        raise RuntimeError("yfinance returned no data")
+    df = raw.rename(columns={"Adj Close": "AdjClose"})[PRICE_COLUMNS].astype("float64")
+    df.index = pd.DatetimeIndex(df.index.tz_localize(None) if df.index.tz else df.index, name="Date")
+    df = df[~df.index.duplicated()].sort_index().dropna()
+    validate_prices(df)
+    if save:
+        config.DATA_RAW.mkdir(parents=True, exist_ok=True)
+        df.to_csv(config.PRICES_CSV, float_format="%.6f")
+    return df
 
 
 def split(df: pd.DataFrame | pd.Series):
@@ -83,3 +101,8 @@ def synthetic_prices(start: str, end: str, seed: int = config.RANDOM_SEED) -> pd
         {"Open": open_, "High": high, "Low": low, "Close": close, "AdjClose": close, "Volume": vol},
         index=idx,
     )
+
+
+if __name__ == "__main__":
+    d = download_prices()
+    print(f"saved {len(d)} rows {d.index[0].date()} -> {d.index[-1].date()} to {config.PRICES_CSV}")

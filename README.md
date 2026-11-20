@@ -2,45 +2,62 @@
 
 Final project for **Finance and Structuring for DS**: developing and back-testing trading strategies on **QQQ (Invesco QQQ Trust, Nasdaq-100)**.
 
-We build two or more strategies (moving-average crossover and a neural network) and backtest them with no look-ahead bias and a train / validation / test split. For each one we estimate the expected return and standard deviation (daily and annualized), cumulative return and maximum drawdown, and compare against buy-and-hold.
+The data, backtest engine, metrics, evaluation tools and comparison charts are **done**. Each team member implements **one strategy**. Every strategy runs through the same pipeline, the results are compared on a validation period, and we pick the best one to move ahead with.
 
-**→ Read [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) first.** It defines the 5 workstreams, the frozen interfaces between them, and the timeline.
+**→ Plan, rules and timeline: [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)**
 
-## Workstreams
+## Strategy slots
 
-| WS | Area | Owner | Main files |
-|---|---|---|---|
-| 1 | Data & Features | _TBD_ | `src/qqq/data.py`, `src/qqq/features.py`, `data/` |
-| 2 | Backtest Engine & Metrics | _TBD_ | `src/qqq/backtest.py`, `src/qqq/metrics.py` |
-| 3 | Moving Average Strategy | _TBD_ | `src/qqq/strategies/moving_average.py` |
-| 4 | Neural Network Strategy | _TBD_ | `src/qqq/strategies/neural_net.py` |
-| 5 | Evaluation, Report & Team Rep | _TBD_ | `src/qqq/reporting.py`, `report/` |
+| Slot | Strategy | File | Owner | Status |
+|---|---|---|---|---|
+| — | Buy & hold (benchmark) | `strategies/base.py` | — | ✅ |
+| 1 | Moving-average crossover | `strategies/moving_average.py` | _TBD_ | ⬜ |
+| 2 | Neural network | `strategies/neural_net.py` | _TBD_ | ⬜ |
+| 3 | Mean reversion (RSI/Bollinger) | `strategies/mean_reversion.py` | _TBD_ | ⬜ |
+| 4 | Momentum / volatility targeting | `strategies/momentum.py` | _TBD_ | ⬜ |
+| 5 | ML classifier (logistic / GBM) | `strategies/ml_classifier.py` | _TBD_ | ⬜ |
 
 ## Quick start
 
 ```bash
+git clone https://github.com/tush7301/qqq-trading-strategies.git && cd qqq-trading-strategies
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"          # add ,nn for PyTorch
-pytest -rx                       # contract tests; unimplemented parts show as xfail
-python scripts/run_all.py --source synthetic   # end-to-end once WS2+ are in
+pip install -e ".[dev]"
+pytest -rx                      # infra tests pass; unimplemented slots show as xfail
+python scripts/run_all.py       # leaderboard + charts for train & validation → results/
 ```
 
-Until real data is committed, `load_prices(source="synthetic")` returns fake data in the exact same format, so nobody is blocked.
+Then open `notebooks/00_quickstart.ipynb`. The core loop:
+
+```python
+from qqq.evaluate import evaluate, grid_search, check_no_lookahead
+from qqq.strategies.moving_average import MovingAverageCrossover
+
+evaluate(MovingAverageCrossover(20, 100))          # train + validation vs buy-and-hold
+grid_search(MovingAverageCrossover, {"short_window": [10, 20, 50],
+                                     "long_window": [100, 200]})   # ranked on train Sharpe
+check_no_lookahead(MovingAverageCrossover())
+```
+
+## The three rules
+1. `position[t]` may only use data up to the **close of day t**. Don't shift it; the engine trades it from t to t+1.
+2. Fit on **train**, choose on **validation**. The **test** period (2022–2026) is opened once, on Dec 14.
+3. Work in your own strategy file and notebook folder, open PRs to `main`, and keep CI green.
 
 ## Layout
-
 ```
-src/qqq/            library code (config, data, features, backtest, metrics, strategies, reporting)
-scripts/run_all.py  reproduces every number in the report
-tests/              contract + look-ahead tests (CI runs these on every PR)
-notebooks/wsN_*/    exploration per workstream
-data/raw/           QQQ.csv (committed; part of the submission)
-results/            positions, metrics JSON, figures
-report/             final report sources
-docs/               plan + weekly progress reports
+data/raw/QQQ.csv          2005-01-03 → 2026-10-30 daily OHLCV + AdjClose (see data/README.md)
+src/qqq/config.py         periods, costs (5 bps), seed, paths
+src/qqq/data.py           load_prices(), split()
+src/qqq/features.py       causal indicators + lagged OHLC features
+src/qqq/backtest.py       run_backtest(), trade_stats()
+src/qqq/metrics.py        compute_metrics(), bootstrap CI, t-test
+src/qqq/evaluate.py       evaluate(), grid_search(), check_no_lookahead()
+src/qqq/reporting.py      leaderboard tables + charts
+src/qqq/strategies/       base.py (contract), _template.py, 5 strategy slots
+scripts/run_all.py        bake-off: all strategies → results/
+tests/                    engine/metric/feature tests + per-strategy contract & look-ahead tests
+results/                  generated: positions, metrics/leaderboards, figures
+report/                   outline + sections for the final report
+docs/                     plan, weekly progress emails
 ```
-
-## Rules of the road
-1. Strategies return positions for day *t* using data up to the close of *t*. **Only the engine shifts them.**
-2. Fit only on train. Choose parameters on validation. **The test set is run once, on Dec 14.**
-3. Work in your own files, open PRs to `main`, and keep CI green.

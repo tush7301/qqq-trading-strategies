@@ -5,11 +5,12 @@ Hi Professor,
 Weekly update from the QQQ (Invesco Nasdaq-100) team:
 
 - **Meetings:** <e.g. "Met on Zoom Thursday for 45 min" / "Coordinated asynchronously on GitHub">
-- **Data (WS1):** <one line>
-- **Backtest engine & metrics (WS2):** <one line>
-- **Moving average strategy (WS3):** <one line>
-- **Neural network strategy (WS4):** <one line>
-- **Evaluation & report (WS5):** <one line>
+- **Shared infrastructure:** <e.g. "data, backtest engine and metrics complete; CI green">
+- **Slot 1, Moving average (<name>):** <one line>
+- **Slot 2, Neural network (<name>):** <one line>
+- **Slot 3, Mean reversion (<name>):** <one line>
+- **Slot 4, Momentum / vol targeting (<name>):** <one line>
+- **Slot 5, ML classifier (<name>):** <one line>
 - **Next week:** <1–2 lines>
 - **Blockers:** <none / ...>
 

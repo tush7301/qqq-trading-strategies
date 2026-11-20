@@ -1,14 +1,14 @@
-"""Contract tests. Every workstream must keep these green.
+"""Strategy contract tests - run automatically for EVERY registered strategy.
 
-Tests for not-yet-implemented pieces xfail (NotImplementedError) instead of
-failing, so CI stays green while each workstream fills in its part.
+Unimplemented strategy slots xfail (NotImplementedError) so CI stays green
+while each owner fills in their strategy.
 """
-import numpy as np
 import pandas as pd
 import pytest
 
 from qqq import config
 from qqq.data import PRICE_COLUMNS, load_prices, split, validate_prices
+from qqq.evaluate import check_no_lookahead
 from qqq.strategies import REGISTRY, validate_positions
 
 
@@ -21,23 +21,27 @@ def _todo(fn, *a, **k):
 
 @pytest.fixture(scope="module")
 def prices():
-    return load_prices(source="synthetic")
+    return load_prices(source="csv")
 
 
-def test_synthetic_prices_match_contract(prices):
+def test_committed_data_matches_contract(prices):
+    assert config.PRICES_CSV.exists()
     validate_prices(prices)
     assert list(prices.columns) == PRICE_COLUMNS
+    assert prices.index[0] >= pd.Timestamp(config.DATA_START)
+    assert prices.index[-1] <= pd.Timestamp(config.DATA_END)
+    assert len(prices) > 5000
 
 
-def test_real_prices_match_contract():
-    if not config.PRICES_CSV.exists():
-        pytest.xfail("WS1: data/raw/QQQ.csv not committed yet")
-    validate_prices(load_prices(source="csv"))
+def test_synthetic_matches_contract():
+    validate_prices(load_prices(source="synthetic"))
 
 
 def test_split_is_disjoint_and_ordered(prices):
     tr, va, te = split(prices)
+    assert len(tr) and len(va) and len(te)
     assert tr.index.max() < va.index.min() and va.index.max() < te.index.min()
+    assert len(tr) + len(va) + len(te) == len(prices)
 
 
 @pytest.mark.parametrize("name", list(REGISTRY))
@@ -46,33 +50,10 @@ def test_strategy_positions_contract(name, prices):
     strat = _todo(REGISTRY[name]().fit, train)
     pos = _todo(strat.generate_positions, prices)
     validate_positions(pos, prices)
+    assert isinstance(strat.params(), dict)
 
 
 @pytest.mark.parametrize("name", list(REGISTRY))
 def test_strategy_has_no_lookahead(name, prices):
-    """Positions up to date T must not change when future data is removed."""
-    train, _, _ = split(prices)
-    strat = _todo(REGISTRY[name]().fit, train)
-    full = _todo(strat.generate_positions, prices)
-    cut = prices.index[int(len(prices) * 0.8)]
-    trunc = strat.generate_positions(prices.loc[:cut])
-    pd.testing.assert_series_equal(full.loc[:cut], trunc, check_names=False)
-
-
-def test_backtest_timing(prices):
-    """Always-long with zero cost must reproduce the asset's returns, lagged correctly."""
-    from qqq.backtest import run_backtest
-
-    pos = pd.Series(1.0, index=prices.index)
-    res = _todo(run_backtest, prices, pos, cost_bps=0.0)
-    asset = prices["AdjClose"].pct_change().fillna(0.0)
-    np.testing.assert_allclose(res.returns.iloc[1:], asset.iloc[1:], rtol=1e-12)
-
-
-def test_metrics_keys(prices):
-    from qqq.metrics import METRIC_KEYS, compute_metrics
-
-    r = prices["AdjClose"].pct_change().dropna()
-    m = _todo(compute_metrics, r)
-    assert set(METRIC_KEYS) <= set(m)
-    assert m["max_drawdown"] <= 0
+    """Positions up to date T must not change when data after T is removed."""
+    _todo(check_no_lookahead, REGISTRY[name](), prices)

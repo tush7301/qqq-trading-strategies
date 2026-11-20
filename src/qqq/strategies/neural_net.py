@@ -1,7 +1,17 @@
-"""WS4 - Neural-network strategy. Owner: <WS4 owner>
+"""Strategy slot 2 - Neural network. Owner: <name>
 
-Predict next-day direction (or return) from lagged OHLC features, then map
-predictions to positions. Fit ONLY on the training period; scalers too.
+Idea (from the brief): train a NN on previous days' OHLC data to predict the
+next day's move, and trade on the prediction.
+
+Suggested path
+  - X = qqq.features.lagged_ohlc_features(prices, lags=self.lags)
+    y = (qqq.features.forward_return(prices, 1) > 0)    # target only!
+  - Drop warm-up rows and the last row (no target). Fit StandardScaler + model
+    on TRAIN rows only - inside fit(). sklearn MLPClassifier is the simplest
+    reproducible option (random_state=self.seed); PyTorch LSTM if ambitious.
+  - generate_positions: p = predict_proba(X)[:, 1]; position = 1 if p > threshold.
+  - Report classification accuracy/AUC on validation AND the trading metrics.
+  - Check robustness across 5 seeds; NN results vary a lot by seed.
 """
 from __future__ import annotations
 
@@ -21,17 +31,15 @@ class NeuralNetStrategy(Strategy):
         self.threshold = threshold
         self.seed = seed
         self.model = None
+        self.scaler = None
 
     def fit(self, train_prices: pd.DataFrame) -> "NeuralNetStrategy":
-        """WS4 TODO: build features (qqq.features.lagged_ohlc_features, or a
-        local copy until WS1 ships), target = 1{r_{t+1} > 0}, fit scaler +
-        model on train only, fixed seed."""
-        raise NotImplementedError("WS4")
+        """TODO: build features/target on train_prices, fit scaler + model."""
+        raise NotImplementedError("strategy slot 2: neural network")
 
     def generate_positions(self, prices: pd.DataFrame) -> pd.Series:
-        """WS4 TODO: p_t = model(features_t); position_t = 1 if p_t > threshold
-        else 0 (optionally -1). Warm-up rows -> 0."""
-        raise NotImplementedError("WS4")
+        """TODO: features -> scaler.transform -> predict_proba -> positions (warm-up 0)."""
+        raise NotImplementedError("strategy slot 2: neural network")
 
     def params(self) -> dict:
         return {"lags": self.lags, "hidden": list(self.hidden),

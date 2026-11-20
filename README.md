@@ -41,7 +41,7 @@ check_no_lookahead(MovingAverageCrossover())
 
 ## The three rules
 1. `position[t]` may only use data up to the **close of day t**. Don't shift it; the engine trades it from t to t+1.
-2. Fit on **train**, choose on **validation**. The **test** period (2022–2026) is opened once, on Dec 14.
+2. Fit on **train**, choose on **validation**. The **test** period (2022–2026) is opened once, in the final run.
 3. Work in your own strategy file and notebook folder, open PRs to `main`, and keep CI green.
 
 ## Layout

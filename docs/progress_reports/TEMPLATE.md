@@ -1,4 +1,4 @@
-**Subject:** [Team QQQ] Weekly progress report: week ending <Sunday date>
+**Subject:** [Team QQQ] Weekly progress report: week <N>
 
 Hi Professor,
 

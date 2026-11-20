@@ -2,16 +2,13 @@
 
 **Course:** Finance and Structuring for DS, Final Project
 **Asset:** QQQ (Invesco QQQ Trust, Nasdaq-100)
-**Due:** December 22 (internal target: **Sunday Dec 20**)
-**Weekly progress email:** every Sunday (Nov 22, Nov 29, Dec 6, Dec 13, Dec 20)
-
-> The brief says "Sunday, December 22nd", but in 2026 Dec 22 is a Tuesday. Confirm the exact deadline with the instructor.
+**Weekly progress email:** sent by the team representative at the end of each week
 
 ---
 
 ## 0. Approach in one paragraph
 
-All shared infrastructure is **already built and tested**: data, features, the backtest engine, metrics, the evaluation helpers, the comparison/leaderboard, and the charts. Each of the 5 team members now owns **one strategy slot** and builds it independently against the same interface. The pipeline runs every strategy under identical rules (same data, same costs, same timing) and ranks them on the **validation** period. On **Dec 6** we pick the strategy to move ahead with, spend a week refining it, then open the sealed **test** period once to get the final numbers.
+All shared infrastructure is **already built and tested**: data, features, the backtest engine, metrics, the evaluation helpers, the comparison/leaderboard, and the charts. Each of the 5 team members now owns **one strategy slot** and builds it independently against the same interface. The pipeline runs every strategy under identical rules (same data, same costs, same timing) and ranks them on the **validation** period. At the **selection meeting** we pick the strategy to move ahead with, spend a week refining it, then open the sealed **test** period once to get the final numbers.
 
 ---
 
@@ -76,17 +73,17 @@ Each slot is one file in `src/qqq/strategies/` plus one folder in `notebooks/`. 
 6. CI must stay green: once you implement your slot, the contract and look-ahead tests for it switch from xfail to pass automatically.
 
 ### Per-slot deliverables
-| Due | Deliverable |
+| Phase | Deliverable |
 |---|---|
-| **Sun Nov 29** | v1 implemented, tests passing, merged to `main` (shows up in the first leaderboard) |
-| **Fri Dec 4** | Tuning done; final parameters set as defaults; a notebook with the parameter search and a validation table |
-| **Sun Dec 13** | Report section (≈1–1.5 pages): idea and economic intuition, method and parameters, train-vs-validation results, strengths, weaknesses, limitations |
+| **2: Build** | v1 implemented, tests passing, merged to `main` (shows up in the first leaderboard) |
+| **3: Tune** | Tuning done; final parameters set as defaults; a notebook with the parameter search and a validation table |
+| **4: Refine** | Report section (≈1–1.5 pages): idea and economic intuition, method and parameters, train-vs-validation results, strengths, weaknesses, limitations |
 
 ---
 
 ## 4. Choosing the strategy to move ahead with
 
-The pipeline (`python scripts/run_all.py`) produces `results/metrics/leaderboard_validation.md` and the matching charts. On **Sun Dec 6** the team picks the winner using this pre-agreed rule (agreed now, so we can't bend it after seeing results):
+The pipeline (`python scripts/run_all.py`) produces `results/metrics/leaderboard_validation.md` and the matching charts. At the **selection meeting** (end of Phase 3) the team picks the winner using this pre-agreed rule (agreed now, so we can't bend it after seeing results):
 
 1. **Eligibility:** contract and look-ahead tests pass; results reproducible.
 2. **Primary metric:** highest **validation Sharpe ratio** after 5 bps costs.
@@ -97,9 +94,9 @@ The pipeline (`python scripts/run_all.py`) produces `results/metrics/leaderboard
    - At least 10 position changes in train (not a near-copy of buy-and-hold)
 4. **Ties** (Sharpe within 0.1): prefer the higher Calmar, then the simpler model.
 
-**After selection (Dec 7–13):** the whole team focuses on the winner. Options include sensitivity of the winner to its parameters, combining it with the runner-up (e.g. MA trend filter + vol targeting), walk-forward refitting, and bootstrap confidence intervals for its Sharpe (`bootstrap_sharpe_ci`). **The report still presents all implemented strategies**: the brief asks for a comparison, and a strategy that loses to buy-and-hold is a valid finding.
+**After selection (Phase 4):** the whole team focuses on the winner. Options include sensitivity of the winner to its parameters, combining it with the runner-up (e.g. MA trend filter + vol targeting), walk-forward refitting, and bootstrap confidence intervals for its Sharpe (`bootstrap_sharpe_ci`). **The report still presents all implemented strategies**: the brief asks for a comparison, and a strategy that loses to buy-and-hold is a valid finding.
 
-**Final run (Mon Dec 14), once:**
+**Final run (start of Phase 5), once:**
 ```bash
 python scripts/run_all.py --include-test
 ```
@@ -107,30 +104,30 @@ These test-period numbers are the headline results, whatever they turn out to be
 
 ---
 
-## 5. Timeline
+## 5. Phases
 
-| Dates | Milestone |
+| Phase | Milestone |
 |---|---|
-| **Thu Nov 19** | ✅ Repo, data, engine, metrics, evaluation, reporting, and CI done |
-| Nov 20–22 | Assign slots and the team representative. Everyone runs `00_quickstart.ipynb`. **Email #1 (Sun Nov 22)** |
-| Nov 23–29 | Build v1 of each strategy *(Thanksgiving Nov 26)*. **Sun Nov 29: first leaderboard.** Email #2 |
-| Nov 30–Dec 6 | Tuning on train, selection on validation; params frozen Fri Dec 4. **Sun Dec 6: comparison meeting → choose the winner** (§4). Email #3 |
-| Dec 7–13 | Refine and stress-test the winner; robustness/significance; all report sections drafted. Email #4 |
-| **Mon Dec 14** | **Test set opened once.** Results tables and figures are final |
-| Dec 14–20 | Results and conclusions written, editing, fresh-clone reproducibility check. Final review Sat Dec 19. Email #5 |
-| Dec 21–22 | Buffer → **submit** |
+| **0: Infrastructure** | ✅ Repo, data, engine, metrics, evaluation, reporting, and CI done |
+| **1: Kickoff** | Assign slots and the team representative. Everyone runs `00_quickstart.ipynb` |
+| **2: Build** | Build v1 of each strategy. Ends with the **first leaderboard** |
+| **3: Tune & select** | Tuning on train, selection on validation; params frozen. Ends with the **selection meeting → choose the winner** (§4) |
+| **4: Refine** | Refine and stress-test the winner; robustness/significance; all report sections drafted |
+| **5: Final run & report** | **Test set opened once.** Results tables and figures final; results and conclusions written; editing; fresh-clone reproducibility check; final review → **submit** |
+
+The team sets the actual dates for each phase at kickoff, working back from the submission deadline and leaving some buffer at the end.
 
 ---
 
 ## 6. Report & team representative
 
-The **team representative** (one of the five, in addition to their slot) sends the Sunday emails using `docs/progress_reports/TEMPLATE.md`, archives each one in `docs/progress_reports/`, and assembles the report from `report/sections/`. Outline and page budget: `report/REPORT_OUTLINE.md`. Shared sections (intro, data, backtest procedure, results, conclusions) are split at the Dec 6 meeting. Most of the content for the data and procedure sections already exists in `data/README.md` and the docstrings of `backtest.py` and `metrics.py`.
+The **team representative** (one of the five, in addition to their slot) sends the weekly emails using `docs/progress_reports/TEMPLATE.md`, archives each one in `docs/progress_reports/`, and assembles the report from `report/sections/`. Outline and page budget: `report/REPORT_OUTLINE.md`. Shared sections (intro, data, backtest procedure, results, conclusions) are split at the selection meeting. Most of the content for the data and procedure sections already exists in `data/README.md` and the docstrings of `backtest.py` and `metrics.py`.
 
 ## 7. Working agreements
 - **Branch per slot** (`s1-ma`, `s2-nn`, `s3-meanrev`, `s4-momentum`, `s5-ml`); open a PR to `main` with 1 reviewer; CI must be green.
 - **Stay in your files:** your strategy module and your notebook folder. Changes to shared infrastructure (`data, features, backtest, metrics, evaluate, reporting, config`) go through a PR that tags the whole team. New *features* are welcome in `features.py`, but add a causality test.
 - **Notebooks** are for exploration; the final strategy logic lives in `src/`. Clear outputs before committing, except final figures.
-- **Never commit test-period numbers before Dec 14.**
+- **Never commit test-period numbers before the final run.**
 
 ## 8. Risks
 | Risk | Mitigation |

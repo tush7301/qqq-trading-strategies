@@ -17,7 +17,7 @@ TRAIN_END = "2018-12-31"
 VALIDATION_START = "2019-01-01"
 VALIDATION_END = "2021-12-31"
 TEST_START = "2022-01-01"
-DATA_END = "2026-10-30"  # last full month before kickoff; WS1 may adjust once.
+DATA_END = "2026-10-30"  # last trading day in the committed data.
 
 # ---- Backtest conventions --------------------------------------------------
 TRADING_DAYS_PER_YEAR = 252

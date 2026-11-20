@@ -58,3 +58,13 @@ Grids are small on purpose (fewer than 20 configurations per family) to limit se
 - Nothing else changes.
 
 **Rule, fixed before running v2b:** v2b replaces v2 as the default if its train walk-forward Sharpe is ≥ v2's − 0.05. The point is to make exposure meaningful, not to raise Sharpe. Its validation result is reported but **marked post-hoc**, because the family's validation numbers had already been seen.
+
+---
+
+*Note added during the review (20 Nov 2026):* how this protocol was actually followed is recorded in [`REVIEW_LOG.md`](REVIEW_LOG.md) §5. In brief:
+- the LSTMs used 3 seeds instead of 5;
+- the grid values were chosen after a train-only training-curve inspection;
+- validation results for a simple neural-network classifier and for volatility targeting had already been seen in the team's strategy screen (PR #17) before this protocol was written;
+- validation CIs were recomputed with the repo's default 2,000 resamples.
+
+The text above this note is unchanged from the original.

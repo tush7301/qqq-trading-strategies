@@ -7,7 +7,7 @@
 - walk-forward selection inside train, validation looked at once
 - test period never loaded
 
-Code and the pre-registered protocol are in [`notebooks/02_neural_net/`](../notebooks/02_neural_net/). Numbers are in [`results/strategies/neural_net/`](../results/strategies/neural_net/README.md). The write-up is report §4.2.
+Code and the pre-registered protocol are in [`notebooks/02_neural_net/`](../notebooks/02_neural_net/). **A complete step-by-step record of what was done**, with deviations, bugs, reruns and post-hoc decisions, is in [`REVIEW_LOG.md`](../notebooks/02_neural_net/REVIEW_LOG.md). Numbers are in [`results/strategies/neural_net/`](../results/strategies/neural_net/README.md). The write-up is report §4.2.
 
 ---
 
@@ -98,7 +98,7 @@ For a single daily price series, we expect architecture to matter far less than 
 
 Implementation choices that matter:
 - **NumPy, not PyTorch, for the slot.** The MLP is about 100 lines with gradients checked against finite differences. Everyone can run it, and CI needs no 2 GB dependency. The LSTMs (research only) use PyTorch.
-- **Seed ensembles.** Each configuration trains 5 seeds and trades their average output. Direction models vary a lot by seed (single-seed walk-forward Sharpe 0.46–0.97); Sharpe-trained ones don't (sd 0.05).
+- **Seed ensembles.** Each configuration trains 5 seeds (3 for the research LSTMs) and trades their average output. Direction models vary a lot by seed (single-seed walk-forward Sharpe 0.46–0.97); Sharpe-trained ones don't (sd 0.05).
 - **Time-ordered early stopping** on the last 15% of each training window.
 - **Walk-forward model selection inside train.** Fits on 2005–10/12/14/16 each trade the next two years, giving a 2011–2018 out-of-fold score. Validation is used once, to confirm.
 

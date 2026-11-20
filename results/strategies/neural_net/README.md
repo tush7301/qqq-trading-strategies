@@ -83,4 +83,6 @@ python scripts/export_results.py neural_net v1_direction --params '{"mode": "dir
 python scripts/export_results.py neural_net v2_sharpe --params '{"scale": "none"}'
 python scripts/export_results.py neural_net v2b_scaled
 ```
-Every run is seeded, and a from-scratch rerun reproduces every number in `research/` exactly.
+Every run is seeded, and from-scratch reruns reproduce every number in `research/` exactly. All Sharpe confidence intervals use 2,000 moving-block bootstrap resamples with 20-day blocks (the repo default).
+
+**Full step-by-step record** (what was done, in what order, deviations from the protocol, crashed runs, post-hoc decisions, and what not to quote): [`notebooks/02_neural_net/REVIEW_LOG.md`](../../../notebooks/02_neural_net/REVIEW_LOG.md).

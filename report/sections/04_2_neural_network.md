@@ -21,7 +21,7 @@ All features use data up to the close of day *t* only. Positions are held from *
 - Targets are built inside `fit()` from the training data only. The last training day has no next-day target and is dropped.
 - Standardisation uses training statistics.
 - Early stopping holds out the **last** 15% of the training window, in time order.
-- Every configuration is trained with 5 random seeds, and the strategy trades their **average** output.
+- Every configuration is trained with 5 random seeds (3 for the research-only LSTMs), and the strategy trades their **average** output.
 - An audit (Section 3) confirms that positions do not change when future data is removed or replaced, that no data is read outside the engine, and that the strategy has no edge on random-walk prices.
 
 **Model selection** was pre-registered (`notebooks/02_neural_net/PROTOCOL.md`).
@@ -107,6 +107,7 @@ Table 4.4 makes the overfitting concrete:
 3. **v2b's rescaling step is post-hoc** (see Results).
 4. **v2b overlaps with Slot 1 v3.** Both end up reducing exposure when volatility is high. The difference is the technique: Slot 1 specifies the rule, while Slot 2 learned it.
 5. **A selection caveat.** Over 40 configurations were tried. Model selection was confined to train, but some selection bias remains (Bailey et al., 2017).
+6. **What was known in advance.** Before this protocol was written, the team's strategy screen had already shown validation results for a simple neural-network direction classifier (AUC ≈ 0.50) and for volatility targeting. The grid values were also chosen after inspecting training curves on train data only. A complete step-by-step record, including two crashed runs and every deviation from the protocol, is in `notebooks/02_neural_net/REVIEW_LOG.md`.
 
 Out-of-sample test results for all strategies are reported in Section 6.
 

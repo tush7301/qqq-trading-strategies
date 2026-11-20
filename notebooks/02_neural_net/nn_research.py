@@ -70,7 +70,8 @@ def validation(make, prices) -> dict:
         m = res.slice(a, b).metrics()
         out[name] = m
     sub = res.slice(*VALID)
-    out["validation_ci"] = bootstrap_sharpe_ci(sub.returns, n_boot=1000, rf_daily=sub.rf)
+    # default: 2000 moving-block resamples, block 20 (same as every other CI in the repo)
+    out["validation_ci"] = bootstrap_sharpe_ci(sub.returns, rf_daily=sub.rf)
     out["_strategy"] = strat
     out["_positions"] = pos
     return out
@@ -267,7 +268,7 @@ def main(with_lstm: bool, validation_only: bool = False) -> None:
     if validation_only:                                  # reuse the saved train-only stage
         best = pd.read_csv(OUT / "best_per_family.csv", dtype=str)
         best["sharpe"] = best["sharpe"].astype(float)
-        return run_validation(best, prices, log, lines)
+        return run_validation(best, prices, log, lines, log_name="log_validation_only.txt")
 
     bh = walk_forward(BuyAndHold, prices)
     log(f"Buy & hold walk-forward (2011-2018) Sharpe {bh['sharpe']:.2f}")
@@ -314,7 +315,7 @@ def main(with_lstm: bool, validation_only: bool = False) -> None:
     return run_validation(best, prices, log, lines)
 
 
-def run_validation(best, prices, log, lines) -> None:
+def run_validation(best, prices, log, lines, log_name="log.txt") -> None:
     # Validation, looked at ONCE per family pick (plus buy & hold)
     val_rows = {"buy_and_hold": validation(BuyAndHold, prices)}
     for _, row in best.iterrows():
@@ -375,7 +376,7 @@ def run_validation(best, prices, log, lines) -> None:
            "val_changes": v["validation"]["n_position_changes"]}
     pd.DataFrame({"C_v2b_scaled (post-hoc)": row}).T.to_csv(OUT / "v2b_scaled_posthoc.csv")
     log(f"\nv2b (post-hoc rescaling): {row}")
-    (OUT / "log.txt").write_text("\n".join(lines) + "\n")
+    (OUT / log_name).write_text("\n".join(lines) + "\n")
     _ = a_row
 
 

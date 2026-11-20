@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-nn = ["torch>=2.2"]          # WS4 may use torch OR sklearn MLPClassifier; decide in week 1
+nn = ["torch>=2.2"]          # research only (notebooks/02_neural_net/nn_lstm.py); Slot 2 itself is pure NumPy
 dev = ["pytest>=8", "jupyter", "ruff"]
 
 [tool.setuptools.packages.find]

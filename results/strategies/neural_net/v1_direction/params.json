@@ -1,0 +1,15 @@
+{
+  "mode": "direction",
+  "lags": 20,
+  "hidden": [
+    32,
+    16
+  ],
+  "threshold": 0.5,
+  "turnover_bps": 25.0,
+  "band": 0.0,
+  "scale": "none",
+  "l2": 0.01,
+  "n_seeds": 5,
+  "seed": 42
+}

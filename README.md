@@ -12,7 +12,7 @@ The data, backtest engine, metrics, evaluation tools and comparison charts are *
 |---|---|---|---|---|---|---|---|
 | — | Buy & hold (benchmark) | — | — | ✅ | — | — | — |
 | 1 | [Moving-average crossover](src/qqq/strategies/moving_average.py) | tush7301 | [#3](https://github.com/tush7301/qqq-trading-strategies/issues/3) | ✅ | ✅ [notebook](notebooks/01_moving_average/tuning.ipynb) | ✅ [v1–v3](results/strategies/ma_crossover/README.md) | ✅ [§4.1](report/sections/04_1_moving_average.md) |
-| 2 | [Neural network](src/qqq/strategies/neural_net.py) | _unassigned_ | [#4](https://github.com/tush7301/qqq-trading-strategies/issues/4) | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | [Neural network](src/qqq/strategies/neural_net.py) | akshatbhandari15 | [#4](https://github.com/tush7301/qqq-trading-strategies/issues/4) | ✅ | ✅ [protocol](notebooks/02_neural_net/PROTOCOL.md) · [notebook](notebooks/02_neural_net/tuning.ipynb) | ✅ [v1–v2b](results/strategies/neural_net/README.md) | ✅ [§4.2](report/sections/04_2_neural_network.md) |
 | 3 | [Mean reversion (RSI / Bollinger)](src/qqq/strategies/mean_reversion.py) | _unassigned_ | [#7](https://github.com/tush7301/qqq-trading-strategies/issues/7) | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | [Momentum / volatility targeting](src/qqq/strategies/momentum.py) | _unassigned_ | [#8](https://github.com/tush7301/qqq-trading-strategies/issues/8) | ⬜ | ⬜ | ⬜ | ⬜ |
 | 5 | [ML classifier (logistic / GBM)](src/qqq/strategies/ml_classifier.py) | _unassigned_ | [#9](https://github.com/tush7301/qqq-trading-strategies/issues/9) | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -24,8 +24,11 @@ Net of 5 bps costs; cash earns T-bills; Sharpe in excess of T-bills. The test pe
 
 | Strategy | Train Sharpe | Train max DD | Validation Sharpe | Validation max DD |
 |---|---|---|---|---|
-| Slot 1: MA crossover v3 (SMA 50/250 + re-entry + vol cap) | **0.76** | −26.8% | **1.44** | **−19.0%** |
+| Slot 1: MA crossover v3 (SMA 50/250 + re-entry + vol cap) | **0.76** | −26.8% | 1.44 | −19.0% |
+| Slot 2: Neural network v2b (Sharpe-trained MLP, vol-rescaled)¹ | 0.72 | −39.2% | **1.53** | **−16.2%** |
 | Buy & hold | 0.56 | −53.4% | 1.38 | −28.6% |
+
+¹ Train figures of a fitted network are in-sample. Its out-of-fold walk-forward Sharpe on 2011–2018 is 0.89, the same as buy-and-hold's. The vol rescaling was added post-hoc (see the Slot 2 protocol).
 
 > **Note for Slot 4:** Slot 1 already uses volatility targeting as a sizing overlay. To keep the comparison between *different techniques* meaningful, Slot 4 should focus on the **momentum** signal (e.g. 3–12-month time-series momentum), with or without its own sizing. Combining winners is planned after the selection meeting (Plan §4).
 

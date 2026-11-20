@@ -6,6 +6,8 @@ The data, backtest engine, metrics, evaluation tools and comparison charts are *
 
 **→ Plan, rules and timeline: [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)**
 
+**→ Strategy research and literature screen: [`docs/STRATEGY_RESEARCH.md`](docs/STRATEGY_RESEARCH.md)** (`python scripts/screen_strategies.py`)
+
 ## Strategy slots
 
 | Slot | Strategy | Owner | Issue | Build | Tune | Results | Report |

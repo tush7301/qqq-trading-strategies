@@ -4,5 +4,8 @@
   "ma_type": "sma",
   "band": 0.0,
   "allow_short": false,
-  "reentry_window": null
+  "reentry_window": null,
+  "vol_target": null,
+  "vol_window": 20,
+  "vol_band": 0.1
 }

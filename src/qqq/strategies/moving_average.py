@@ -28,9 +28,22 @@ up, so the strategy misses the rebound. With re-entry the strategy is long
 if the slow trend is up OR price has recovered above a faster average. It
 uses the same `ma_type`; it only switches on after the long-window warm-up.
 
+Optional volatility cap (vol_target = T, Moreira & Muir 2017):
+        position_t = signal_t * min(1, T / realized_vol_t)
+    realized_vol = annualized std of the last `vol_window` daily returns
+    (known at close t). Exposure is cut in turbulent markets, where crashes
+    cluster; it is never levered above the signal. To avoid trading every day,
+    the held size only changes when the signal itself changes, the target is
+    0 or full size, or it drifts more than `vol_band` from what is held.
+    vol_target="train" sets T to QQQ's realized volatility over the training
+    period, computed in fit() - a target chosen without looking at any results.
+
 Defaults = tuned configuration (notebooks/01_moving_average/tuning.ipynb):
-    SMA 50/250, no band, long/flat, fast re-entry above SMA 50.
-Pass reentry_window=None for the plain crossover (needed when long_window <= 50).
+    SMA 50/250, no band, long/flat, fast re-entry above SMA 50,
+    volatility cap at QQQ's train-period volatility (~20.2%) with a 10% band.
+The default needs fit(train_prices) before generate_positions (run_all, evaluate
+and grid_search do this). For the plain crossover pass reentry_window=None,
+vol_target=None.
 """
 from __future__ import annotations
 
@@ -54,6 +67,9 @@ class MovingAverageCrossover(Strategy):
         band: float = 0.0,
         allow_short: bool = False,
         reentry_window: int | None = 50,
+        vol_target: float | str | None = "train",
+        vol_window: int = 20,
+        vol_band: float = 0.1,
     ):
         if not (isinstance(short_window, (int, np.integer)) and short_window >= 1):
             raise ValueError("short_window must be an integer >= 1")
@@ -68,11 +84,39 @@ class MovingAverageCrossover(Strategy):
         ):
             raise ValueError("reentry_window must be None or an integer in [2, long_window)")
         self.reentry_window = None if reentry_window is None else int(reentry_window)
+        if not (vol_target is None or vol_target == "train"
+                or (isinstance(vol_target, (int, float)) and vol_target > 0)):
+            raise ValueError("vol_target must be None, 'train' or a positive number")
+        if not (isinstance(vol_window, (int, np.integer)) and vol_window >= 2):
+            raise ValueError("vol_window must be an integer >= 2")
+        if not (0.0 <= vol_band < 1.0):
+            raise ValueError("vol_band must be in [0, 1)")
+        self.vol_target = vol_target
+        self.vol_window = int(vol_window)
+        self.vol_band = float(vol_band)
+        self.fitted_vol_target_: float | None = None
         self.short_window = int(short_window)
         self.long_window = int(long_window)
         self.ma_type = ma_type
         self.band = float(band)
         self.allow_short = bool(allow_short)
+
+    # ------------------------------------------------------------------ fit ---
+    def fit(self, train_prices: pd.DataFrame) -> "MovingAverageCrossover":
+        """Only needed for vol_target="train": QQQ's annualized volatility on train."""
+        if self.vol_target == "train":
+            r = F.daily_returns(train_prices).dropna()
+            self.fitted_vol_target_ = float(r.std(ddof=1) * np.sqrt(252))
+        return self
+
+    def _resolved_vol_target(self) -> float | None:
+        if self.vol_target is None:
+            return None
+        if self.vol_target == "train":
+            if self.fitted_vol_target_ is None:
+                raise ValueError('vol_target="train" requires fit(train_prices) first')
+            return self.fitted_vol_target_
+        return float(self.vol_target)
 
     # ------------------------------------------------------------------ core ---
     def _ma(self, s: pd.Series, window: int) -> pd.Series:
@@ -103,7 +147,24 @@ class MovingAverageCrossover(Strategy):
         if self.reentry_window is not None:
             pos[prices["AdjClose"] > ma["ma_reentry"]] = 1.0  # NaN comparison -> False
         pos[ma["ma_long"].isna() | ma["ma_short"].isna()] = 0.0  # warm-up
+        target = self._resolved_vol_target()
+        if target is not None:
+            pos = self._vol_cap(pos, prices, target)
         return pos.rename("position")
+
+    def _vol_cap(self, signal: pd.Series, prices: pd.DataFrame, target: float) -> pd.Series:
+        vol = F.rolling_volatility(prices, self.vol_window)  # annualized, trailing, known at t
+        scale = (target / vol).clip(upper=1.0).fillna(1.0)
+        desired = (signal * scale).to_numpy()
+        sig = signal.to_numpy()
+        out, cur, prev_sig = np.zeros(len(desired)), 0.0, 0.0
+        for t in range(len(desired)):  # causal: only uses desired[t], sig[t] and past state
+            x = desired[t]
+            if (sig[t] != prev_sig or x == 0.0 or abs(x) == 1.0
+                    or abs(x - cur) > self.vol_band):
+                cur = x
+            out[t], prev_sig = cur, sig[t]
+        return pd.Series(out, index=signal.index)
 
     def params(self) -> dict:
         return {
@@ -113,4 +174,7 @@ class MovingAverageCrossover(Strategy):
             "band": self.band,
             "allow_short": self.allow_short,
             "reentry_window": self.reentry_window,
+            "vol_target": self.vol_target,
+            "vol_window": self.vol_window,
+            "vol_band": self.vol_band,
         }

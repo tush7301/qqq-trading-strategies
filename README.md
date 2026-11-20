@@ -11,7 +11,7 @@ The data, backtest engine, metrics, evaluation tools and comparison charts are *
 | Slot | Strategy | File | Owner | Status |
 |---|---|---|---|---|
 | — | Buy & hold (benchmark) | `strategies/base.py` | — | ✅ |
-| 1 | Moving-average crossover | `strategies/moving_average.py` | tush7301 | ✅ tuned (SMA 50/250 + re-entry 50) |
+| 1 | Moving-average crossover | `strategies/moving_average.py` | tush7301 | ✅ tuned (SMA 50/250 + re-entry 50 + vol cap) |
 | 2 | Neural network | `strategies/neural_net.py` | _TBD_ | ⬜ |
 | 3 | Mean reversion (RSI/Bollinger) | `strategies/mean_reversion.py` | _TBD_ | ⬜ |
 | 4 | Momentum / volatility targeting | `strategies/momentum.py` | _TBD_ | ⬜ |

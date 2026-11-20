@@ -213,7 +213,7 @@ Everything here was produced with Claude (an AI assistant) working in the team r
 6. **Leakage audit (`scripts/leakage_audit.py`).**
    - Its first version had a weak check 2: two random "alternate futures" both happened to start with an up day, like the real data, so the deliberately leaky control slipped through. A **mirrored** future (real returns with the sign flipped) was added; since then the control is caught by checks 1, 2 and 4.
    - The audit also exposed one real leak, in this screen's own **turn-of-month** rule. It decided "is tomorrow the last trading day?" from the future rows of the price index. It now uses a Mon–Fri calendar known in advance, and its numbers changed (train Sharpe 0.13 → 0.18, validation 0.72 → 0.58).
-7. **Confidence intervals** first used 1,000 bootstrap resamples. They were later rerun with the repo default (2,000 resamples, 20-day blocks) so they match Slot 1's report. Only the CI columns changed, by ≤ 0.07.
+7. **Confidence intervals** first used 1,000 bootstrap resamples. They were later rerun with the repo default (2,000 resamples, 20-day blocks) so they match Slot 1's report. Only the CI columns changed, by at most 0.10.
 8. **Validation was seen for every strategy in the screen**, including a simple neural-network direction classifier (§3.4, AUC 0.50). This happened **before** Slot 2's protocol was written, so Slot 2's choice of model families was made knowing that result. The Slot 2 protocol says so.
 
 Reproduce everything in this document with `python scripts/screen_strategies.py` (tables) and `python scripts/leakage_audit.py` (audit).

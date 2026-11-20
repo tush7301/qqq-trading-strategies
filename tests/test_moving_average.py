@@ -9,7 +9,12 @@ import pytest
 from qqq.backtest import run_backtest, trade_stats
 from qqq.data import load_prices
 from qqq.evaluate import check_no_lookahead
+from functools import partial
+
 from qqq.strategies.moving_average import MovingAverageCrossover
+
+# Plain crossover (no re-entry) - the tuned defaults turn re-entry on.
+MA = partial(MovingAverageCrossover, reentry_window=None)
 
 
 def _prices(close):
@@ -32,7 +37,8 @@ def qqq():
     return load_prices(source="csv")
 
 
-def reference_positions(prices, short, long_, ma_type="sma", band=0.0, allow_short=False):
+def reference_positions(prices, short, long_, ma_type="sma", band=0.0, allow_short=False,
+                        reentry=None):
     """Deliberately naive day-by-day loop - an independent re-implementation."""
     p = prices["AdjClose"].to_numpy()
     n = len(p)
@@ -53,6 +59,7 @@ def reference_positions(prices, short, long_, ma_type="sma", band=0.0, allow_sho
         return out
 
     s, l_ = ma(short), ma(long_)
+    rr = ma(reentry) if reentry else None
     pos, prev = np.zeros(n), 0.0
     for t in range(n):
         if np.isnan(s[t]) or np.isnan(l_[t]):
@@ -64,23 +71,25 @@ def reference_positions(prices, short, long_, ma_type="sma", band=0.0, allow_sho
         elif r < -band:
             prev = -1.0 if allow_short else 0.0
         pos[t] = prev
+        if rr is not None and not np.isnan(rr[t]) and p[t] > rr[t]:
+            pos[t] = 1.0
     return pd.Series(pos, index=prices.index)
 
 
 # ------------------------------------------------------------------ toy data ---
 def test_crossover_day_and_warmup():
-    pos = MovingAverageCrossover(2, 4).generate_positions(_prices(V))
+    pos = MA(2, 4).generate_positions(_prices(V))
     assert pos.tolist() == [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
 
 
 def test_allow_short():
-    pos = MovingAverageCrossover(2, 4, allow_short=True).generate_positions(_prices(V))
+    pos = MA(2, 4, allow_short=True).generate_positions(_prices(V))
     assert pos.tolist() == [0, 0, 0, -1, -1, -1, 1, 1, 1, 1]
 
 
 def test_engine_trades_the_day_after_the_signal():
     p = _prices(V)
-    res = run_backtest(p, MovingAverageCrossover(2, 4).generate_positions(p), cost_bps=0.0)
+    res = run_backtest(p, MA(2, 4).generate_positions(p), cost_bps=0.0)
     # signal at close of day 6 -> first P&L on day 7 (+9/8 - 1)
     assert res.returns.iloc[:7].abs().sum() == 0
     assert res.returns.iloc[7] == pytest.approx(9 / 8 - 1)
@@ -90,17 +99,17 @@ def test_hysteresis_keeps_position_inside_band():
     # price vs SMA3 ratio: day3 +3.9% (enter), day4 +1.3%, day5 -0.95% (both inside
     # a 2% band -> hold), day6 -6.3% (exit).
     p = _prices([100, 100, 100, 106, 105, 104, 95])
-    ratio = MovingAverageCrossover(1, 3).moving_averages(p)["ratio"]
+    ratio = MA(1, 3).moving_averages(p)["ratio"]
     assert -0.02 < ratio.iloc[5] < 0 < ratio.iloc[4] < 0.02
-    pos_band = MovingAverageCrossover(1, 3, band=0.02).generate_positions(p)
-    pos_none = MovingAverageCrossover(1, 3, band=0.0).generate_positions(p)
+    pos_band = MA(1, 3, band=0.02).generate_positions(p)
+    pos_none = MA(1, 3, band=0.0).generate_positions(p)
     assert pos_band.iloc[3:].tolist() == [1, 1, 1, 0]  # band holds through day 5
     assert pos_none.iloc[3:].tolist() == [1, 1, 0, 0]  # no band: exits at the crossover
 
 
 def test_short_window_one_is_price_vs_ma():
     p = _prices(V)
-    ma = MovingAverageCrossover(1, 4).moving_averages(p)
+    ma = MA(1, 4).moving_averages(p)
     pd.testing.assert_series_equal(ma["ma_short"], p["AdjClose"], check_names=False)
 
 
@@ -110,10 +119,35 @@ def test_short_window_one_is_price_vs_ma():
     dict(short_window=5, long_window=10, ma_type="wma"),
     dict(short_window=5, long_window=10, band=-0.01),
     dict(short_window=5.5, long_window=10),
+    dict(short_window=5, long_window=10, reentry_window=10),
+    dict(short_window=5, long_window=10, reentry_window=1),
 ])
 def test_invalid_params(kwargs):
     with pytest.raises(ValueError):
-        MovingAverageCrossover(**kwargs)
+        MA(**kwargs)
+
+
+def test_reentry_goes_long_before_the_crossover():
+    # price climbs back above SMA2 on day 5, one day before SMA2 crosses SMA4
+    pos = MA(2, 4, reentry_window=2).generate_positions(_prices(V))
+    assert pos.tolist() == [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]
+
+
+def test_reentry_overrides_short():
+    pos = MA(2, 4, allow_short=True, reentry_window=2).generate_positions(_prices(V))
+    assert pos.tolist() == [0, 0, 0, -1, -1, 1, 1, 1, 1, 1]
+
+
+def test_reentry_respects_long_window_warmup():
+    # price > SMA2 from day 1, but SMA4 only exists from day 3
+    pos = MA(2, 4, reentry_window=2).generate_positions(_prices(range(1, 9)))
+    assert pos.tolist() == [0, 0, 0, 1, 1, 1, 1, 1]
+
+
+def test_reentry_never_reduces_exposure(qqq):
+    base = MA(50, 200).generate_positions(qqq)
+    re = MA(50, 200, reentry_window=50).generate_positions(qqq)
+    assert (re >= base).all() and (re > base).any()
 
 
 # ------------------------------------------------------------------ real QQQ ---
@@ -123,25 +157,38 @@ def test_invalid_params(kwargs):
     dict(short=10, long_=50, ma_type="ema"),
     dict(short=20, long_=100, band=0.01),
     dict(short=10, long_=50, band=0.005, allow_short=True),
+    dict(short=50, long_=200, reentry=50),
+    dict(short=20, long_=150, ma_type="ema", band=0.01, reentry=20),
+    dict(short=10, long_=100, allow_short=True, reentry=30),
 ])
 def test_matches_reference_on_qqq(kw, qqq):
     strat = MovingAverageCrossover(kw["short"], kw["long_"], kw.get("ma_type", "sma"),
-                                   kw.get("band", 0.0), kw.get("allow_short", False))
+                                   kw.get("band", 0.0), kw.get("allow_short", False),
+                                   reentry_window=kw.get("reentry"))
     got = strat.generate_positions(qqq)
     exp = reference_positions(qqq, **kw)
     pd.testing.assert_series_equal(got, exp, check_names=False)
 
 
 def test_band_reduces_trading(qqq):
-    n0 = trade_stats(run_backtest(qqq, MovingAverageCrossover(10, 50).generate_positions(qqq)))
-    n2 = trade_stats(run_backtest(qqq, MovingAverageCrossover(10, 50, band=0.02)
+    n0 = trade_stats(run_backtest(qqq, MA(10, 50).generate_positions(qqq)))
+    n2 = trade_stats(run_backtest(qqq, MA(10, 50, band=0.02)
                                   .generate_positions(qqq)))
     assert n2["n_position_changes"] < n0["n_position_changes"]
 
 
 @pytest.mark.parametrize("strat", [
-    MovingAverageCrossover(20, 100, ma_type="ema", band=0.01),
-    MovingAverageCrossover(5, 50, allow_short=True),
+    MA(20, 100, ma_type="ema", band=0.01),
+    MA(50, 200, ma_type="ema", band=0.01, reentry_window=50),
+    MA(5, 50, allow_short=True),
 ])
 def test_variants_have_no_lookahead(strat, qqq):
     check_no_lookahead(strat, qqq)
+
+
+def test_defaults_match_tuning():
+    """Defaults = choice in notebooks/01_moving_average/tuning.ipynb. Update both together."""
+    assert MovingAverageCrossover().params() == {
+        "short_window": 50, "long_window": 250, "ma_type": "sma", "band": 0.0,
+        "allow_short": False, "reentry_window": 50,
+    }

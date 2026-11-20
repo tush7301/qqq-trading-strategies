@@ -8,14 +8,26 @@ The data, backtest engine, metrics, evaluation tools and comparison charts are *
 
 ## Strategy slots
 
-| Slot | Strategy | File | Owner | Status |
+| Slot | Strategy | Owner | Issue | Build | Tune | Results | Report |
+|---|---|---|---|---|---|---|---|
+| — | Buy & hold (benchmark) | — | — | ✅ | — | — | — |
+| 1 | [Moving-average crossover](src/qqq/strategies/moving_average.py) | tush7301 | [#3](https://github.com/tush7301/qqq-trading-strategies/issues/3) | ✅ | ✅ [notebook](notebooks/01_moving_average/tuning.ipynb) | ✅ [v1–v3](results/strategies/ma_crossover/README.md) | ✅ [§4.1](report/sections/04_1_moving_average.md) |
+| 2 | [Neural network](src/qqq/strategies/neural_net.py) | _unassigned_ | [#4](https://github.com/tush7301/qqq-trading-strategies/issues/4) | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | [Mean reversion (RSI / Bollinger)](src/qqq/strategies/mean_reversion.py) | _unassigned_ | [#7](https://github.com/tush7301/qqq-trading-strategies/issues/7) | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | [Momentum / volatility targeting](src/qqq/strategies/momentum.py) | _unassigned_ | [#8](https://github.com/tush7301/qqq-trading-strategies/issues/8) | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | [ML classifier (logistic / GBM)](src/qqq/strategies/ml_classifier.py) | _unassigned_ | [#9](https://github.com/tush7301/qqq-trading-strategies/issues/9) | ⬜ | ⬜ | ⬜ | ⬜ |
+
+✅ done · 🟡 in progress · ⬜ not started. **Build** = implemented, tests green, merged. **Tune** = parameters chosen on train/validation and set as defaults. **Results** = exported with `scripts/export_results.py`. **Report** = section in `report/sections/`.
+
+### Current standings (development periods only)
+Net of 5 bps costs; cash earns T-bills; Sharpe in excess of T-bills. The test period (2022 →) is sealed until the final run.
+
+| Strategy | Train Sharpe | Train max DD | Validation Sharpe | Validation max DD |
 |---|---|---|---|---|
-| — | Buy & hold (benchmark) | `strategies/base.py` | — | ✅ |
-| 1 | Moving-average crossover | `strategies/moving_average.py` | tush7301 | ✅ tuned (SMA 50/250 + re-entry 50 + vol cap) |
-| 2 | Neural network | `strategies/neural_net.py` | _TBD_ | ⬜ |
-| 3 | Mean reversion (RSI/Bollinger) | `strategies/mean_reversion.py` | _TBD_ | ⬜ |
-| 4 | Momentum / volatility targeting | `strategies/momentum.py` | _TBD_ | ⬜ |
-| 5 | ML classifier (logistic / GBM) | `strategies/ml_classifier.py` | _TBD_ | ⬜ |
+| Slot 1: MA crossover v3 (SMA 50/250 + re-entry + vol cap) | **0.76** | −26.8% | **1.44** | **−19.0%** |
+| Buy & hold | 0.56 | −53.4% | 1.38 | −28.6% |
+
+> **Note for Slot 4:** Slot 1 already uses volatility targeting as a sizing overlay. To keep the comparison between *different techniques* meaningful, Slot 4 should focus on the **momentum** signal (e.g. 3–12-month time-series momentum), with or without its own sizing. Combining winners is planned after the selection meeting (Plan §4).
 
 ## Quick start
 

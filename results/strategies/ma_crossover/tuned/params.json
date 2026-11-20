@@ -1,0 +1,8 @@
+{
+  "short_window": 50,
+  "long_window": 250,
+  "ma_type": "sma",
+  "band": 0.0,
+  "allow_short": false,
+  "reentry_window": 50
+}

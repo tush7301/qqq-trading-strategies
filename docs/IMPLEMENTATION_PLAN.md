@@ -76,7 +76,7 @@ Each slot is one file in `src/qqq/strategies/` plus one folder in `notebooks/`. 
 | Phase | Deliverable |
 |---|---|
 | **2: Build** | v1 implemented, tests passing, merged to `main` (shows up in the first leaderboard) |
-| **3: Tune** | Tuning done; final parameters set as defaults; a notebook with the parameter search and a validation table |
+| **3: Tune** | Tuning done; final parameters set as defaults; a notebook with the parameter search and a validation table; results exported with `scripts/export_results.py <strategy> <label>` into `results/strategies/` |
 | **4: Refine** | Report section (≈1–1.5 pages): idea and economic intuition, method and parameters, train-vs-validation results, strengths, weaknesses, limitations |
 
 ---

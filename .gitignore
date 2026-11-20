@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+# model checkpoints (keep small summaries in results/ instead)
+*.pt
+*.pkl
+# NOTE: data/raw/QQQ.csv IS committed - the brief requires submitting the data.
